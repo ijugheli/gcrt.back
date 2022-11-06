@@ -1,0 +1,1 @@
+INSERT INTO `users`(`id`, `name`, `lastname`, `phone`, `address`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES (1, 'Irakli', 'Jugheli', '551360135', NULL, 'ijugh13@freeuni.edu.ge', NULL, '$2y$10$jm0eGDTZW/hz9XTiM3ENQ.fRTbjYhbl9GRNPdLp6p/ciFg2Th51uu', NULL, '2022-11-01 15:26:48', '2022-11-01 15:26:48');

@@ -1,0 +1,10 @@
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (1, 0, 1, 1, 'პარტნიორი ორგანიზაციები');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (3, 0, 1, 1, 'დონორი');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (4, 0, 1, 1, 'ფილიალები');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (5, 0, 1, 1, 'პროექტი');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (6, 0, 1, 1, 'კატეგორია');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (7, 0, 1, 1, 'ეროვნება');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (8, 0, 1, 1, 'განათლება');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (9, 0, 1, 1, 'ოჯახური მდგომარეობა');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (10, 0, 1, 1, 'ქვეყანა/რეგიონი/რაიონი');
+INSERT INTO `attrs`(`id`, `p_id`, `type`, `status_id`, `title`) VALUES (11, 0, 3, 1, 'კლიენტი');

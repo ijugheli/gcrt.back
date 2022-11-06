@@ -1,0 +1,14 @@
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (1, 'input', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (2, 'textarea', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (3, 'editable-textarea', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (4, 'checkbox', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (5, 'toggle', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (6, 'select', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (7, 'searchable-select', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (8, 'multiselect', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (9, 'searchable-multiselect', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (10, 'datepicker', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (11, 'timepicker', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (12, 'datetimepicker', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (13, 'treeselect', 1, '2022-10-06 18:39:54');
+INSERT INTO `input_view_types`(`id`, `title`, `status_id`, `insert_date`) VALUES (14, 'tableselect', 1, '2022-10-06 18:39:54');
