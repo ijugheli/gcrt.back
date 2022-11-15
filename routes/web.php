@@ -26,8 +26,16 @@ $router->get('/attrs/values/{attr_id}', 'AttrsController@values');
 $router->post('/attrs/{attr_id}/values/remove', 'AttrsController@remove');
 $router->post('/attrs/{attr_id}/values/add', 'AttrsController@addValues');
 
-;
+//Authorization
 $router->post('/user/login', 'AuthController@login');
 $router->post('/user/logout', 'AuthController@logout');
 $router->post('/user/refresh', 'AuthController@refresh');
 $router->post('/user/profile', 'AuthController@me');
+
+//User Management
+$router->get('/user/list', 'UserController@list');
+$router->get('/user/{user_id}', 'UserController@details');
+$router->post('/user/add', 'UserController@add');
+$router->post('/user/edit/{user_id}', 'UserController@edit');
+$router->post('/user/changePassword/{user_id}', 'UserController@changePassword');
+$router->delete('/user/{user_id}', 'UserController@delete');

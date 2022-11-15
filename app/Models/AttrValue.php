@@ -51,7 +51,13 @@ class AttrValue extends Model
             $selected = [];
             $multi = json_decode($this->value_json, true);
 
+            if (empty($multi)) {
+                return $this->selected;
+            }
+
             foreach ($multi as $item) {
+                if (!isset($item['id']) || !isset($item['name'])) continue;
+
                 $selected[] = $item['name'];
                 $selectedIDs[] = $item['id'];
             }
