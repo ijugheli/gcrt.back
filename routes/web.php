@@ -20,22 +20,22 @@ $router->get('/', function () use ($router) {
 });
 
 $router->get('/attrs', 'AttrsController@list');
-$router->get('/attrs/{attr_id}', 'AttrsController@details');
-$router->get('/attrs/{attr_id}/values', 'AttrsController@full');
-$router->get('/attrs/values/{attr_id}', 'AttrsController@values');
-$router->post('/attrs/{attr_id}/values/remove', 'AttrsController@remove');
-$router->post('/attrs/{attr_id}/values/add', 'AttrsController@addValues');
+$router->get('/attrs/{attr_id:[0-9]+}', 'AttrsController@details');
+$router->get('/attrs/{attr_id:[0-9]+}/values', 'AttrsController@full');
+$router->get('/attrs/values/{attr_id:[0-9]+}', 'AttrsController@values');
+$router->post('/attrs/{attr_id:[0-9]+}/values/remove', 'AttrsController@remove');
+$router->post('/attrs/{attr_id:[0-9]+}/values/add', 'AttrsController@addValues');
 
 //Authorization
 $router->post('/user/login', 'AuthController@login');
 $router->post('/user/logout', 'AuthController@logout');
 $router->post('/user/refresh', 'AuthController@refresh');
-$router->post('/user/profile', 'AuthController@me');
+$router->get('/user/profile', 'AuthController@me');
 
 //User Management
 $router->get('/user/list', 'UserController@list');
-$router->get('/user/{user_id}', 'UserController@details');
+$router->get('/user/{user_id:[0-9]+}', 'UserController@details');
 $router->post('/user/add', 'UserController@add');
-$router->post('/user/edit/{user_id}', 'UserController@edit');
-$router->post('/user/changePassword/{user_id}', 'UserController@changePassword');
-$router->delete('/user/{user_id}', 'UserController@delete');
+$router->post('/user/edit/{user_id:[0-9]+}', 'UserController@edit');
+$router->post('/user/changePassword', 'UserController@changePassword');
+$router->delete('/user/{user_id:[0-9]+}', 'UserController@delete');

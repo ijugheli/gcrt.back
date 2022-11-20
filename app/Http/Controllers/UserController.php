@@ -6,9 +6,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use  App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
 
     public function list()
     {
@@ -72,10 +78,10 @@ class UserController extends Controller
             'phone',
         ]);
         $user = User::where('id', $userID)->first();
-        
+
         // dd($user);
         // return response()->json($user);
-        
+
         if ($user === null) {
             return response()->json(['მომხმარებელი ვერ მოიძებნა']);
         }
@@ -94,30 +100,30 @@ class UserController extends Controller
     public function changePassword(Request $request)
     {
         $data = $request->only([
-            'password',
+            'currentPassword',
             'newPassword',
             'confirmPassword',
         ]);
 
-        $userID = intval($request->route('user_id'));
+        $userID = Auth::id();
         $user = User::where('id', $userID)->first();
 
         if ($user === null) {
             return response()->json(['მომხმარებელი ვერ მოიძებნა']);
         }
 
-        if (!Hash::check($request->get('password'), $user->password)) {
-            return response()->json(['არასწორი მონაცემები']);
+        if (!Hash::check($request->get('currentPassword'), $user->password)) {
+            return response()->json(['StatusMessage' => 'არსებული პაროლი არასწორია'], 500);
         }
 
         $validator = Validator::make($data, [
-            'password' => 'required',
+            'currentPassword' => 'required',
             'newPassword' => 'required',
             'confirmPassword' => 'required',
         ]);
 
         if ($request->get('newPassword') != $request->get('confirmPassword')) {
-            return response()->json(['პაროლები არ ემთხვევა']);
+            return response()->json(['StatusMessage' => 'პაროლები არ ემთხვევა'], 500);
         }
 
         if ($validator->fails()) {
@@ -125,10 +131,10 @@ class UserController extends Controller
         }
 
         if ($user->update(['password' => Hash::make($request->get('newPassword'))])) {
-            return response()->json(['ოპერაცია წარმატებით დასრულდა']);
+            return response()->json(['StatusMessage' => 'ოპერაცია წარმატებით დასრულდა']);
         }
 
-        return response()->json(['ოპერაციის შესრულების დროს მოხდა შეცდომა']);
+        return response()->json(['StatusMessage' => 'ოპერაციის შესრულების დროს მოხდა შეცდომა'], 500);
     }
 
     public function delete(Request $request)

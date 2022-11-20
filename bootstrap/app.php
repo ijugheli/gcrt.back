@@ -81,8 +81,12 @@ $app->middleware([
     App\Http\Middleware\CorsMiddleware::class
 ]);
 
+// $app->routeMiddleware([
+//     'auth' => App\Http\Middleware\CorsMiddleware::class,
+// ]);
+
 $app->routeMiddleware([
-    'auth' => App\Http\Middleware\CorsMiddleware::class,
+    'auth' => App\Http\Middleware\Authenticate::class,
 ]);
 
 $app->register(App\Providers\AuthServiceProvider::class);
