@@ -25,10 +25,18 @@ $DATA_TYPES =  [
     6 => 'boolean',
 ];
 
+$ATTR_TYPES = [
+    'standard' => 1,
+    'tree' => 2,
+    'entity' => 3,
+];
+
 return [
     'VIEW_TYPES' => $VIEW_TYPES,
     'VIEW_TYPE_IDS' => array_flip($VIEW_TYPES),
     'DATA_TYPES' => $DATA_TYPES,
-    'DATA_TYPE_IDS' => array_flip($DATA_TYPES)
-
+    'DATA_TYPE_IDS' => array_flip($DATA_TYPES),
+    'ATTR_TYPES' => $ATTR_TYPES
 ];
+
+

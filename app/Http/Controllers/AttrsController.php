@@ -8,7 +8,7 @@ use App\Models\AttrProperty;
 use App\Models\AttrValue;
 use Illuminate\Http\Request;
 use DateTime;
-
+use Illuminate\Support\Facades\Validator;
 
 class AttrsController extends Controller
 {
@@ -18,57 +18,9 @@ class AttrsController extends Controller
         return Attr::with(['properties'])->get();
     }
 
-    public function details()
+    public function values()
     {
-        $attribute = Attr::with(['properties'])->find(request()->attr_id);
-
-        foreach ($attribute->properties as $key => $property) {
-            $sourceAttrID = $attribute->properties[$key]['source_attr_id'];
-
-            if (is_null($sourceAttrID)) {
-                continue;
-            }
-
-            $attribute->properties[$key]['source'] = AttrValue::where('attr_id',  $sourceAttrID)->get();
-        }
-
-        return $attribute;
-    }
-
-    public function full()
-    {
-        $attribute = Attr::with(['properties', 'values'])->find(request()->attr_id);
-
-        foreach ($attribute->properties as $key => $property) {
-            $sourceAttrID = $attribute->properties[$key]['source_attr_id'];
-
-            if (is_null($sourceAttrID)) {
-                continue;
-            }
-
-            $attribute->properties[$key]['source'] = AttrValue::where('attr_id',  $sourceAttrID)->get();
-        }
-
-        $values = [];
-
-        foreach ($attribute->values as $key => $value) {
-            $valueID = intval($attribute->values[$key]['value_id']);
-            $value['property_id'] = intval($value['property_id']);
-            // $value['property'] = $attribute->properties[$value['property_id']];
-
-            if (!isset($values[$valueID])) {
-                $values[$valueID] = [
-                    'valueID' => $valueID,
-                    'id' => $value['id']
-                ];
-            }
-
-            $values[$valueID][$value['property_id']] = $value['value'];
-        }
-
-        $attribute['rows'] = array_values($values);
-
-        return $attribute;
+        return Attr::find(request()->attr_id)->values;
     }
 
     public function addValues(Request $request)
@@ -101,16 +53,107 @@ class AttrsController extends Controller
         }
 
         Attr::find($attrID)->values()->createMany($sanitizedValues);
+
+        return response()->json(['ოპერაცია წარმატებით დასრულდა']);
     }
 
-    public function values()
+    public function editValues(Request $request)
     {
-        return Attr::find(request()->attr_id)->values;
+        $values = $request->all();
+        $attrID = intval($request->route('attr_id'));
+        $valueID = intval($request->route('value_id'));
+        $sanitizedValues = [];
+
+        foreach ($values as $entry) {
+            $propertyID = $entry[0];
+            $newValue = $entry[1];
+            $value = AttrValue::where('attr_id', $attrID)->where('property_id', $propertyID)
+                ->where('value_id', $valueID)->first();
+
+            if (is_null($value)) {
+                continue;
+            }
+
+            if ($value['valueName'] == 'value_date' && !is_null($newValue['value_date'])) {
+                $newValue['value_date'] = (new DateTime($newValue['value_date']))->format('Y-m-d h:m:s');
+            }
+
+            if ($value['valueName'] == 'value_boolean') {
+                $newValue['value_boolean'] = isset($newValue['value_boolean']) && $newValue['value_boolean'] == 1 ? 1 : 0;
+            }
+
+            $value->update([$value['valueName'] => $newValue[$value['valueName']]]);
+            $value->save();
+        }
+
+        return response()->json(['ოპერაცია წარმატებით დასრულდა']);
     }
 
-    public function add()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function editValue(Request $request)
     {
-        echo request()->options['c']['k'];
+        $data = $request->only([
+            'value_id',
+            'attr_id',
+            'property_id',
+            'value',
+        ]);
+
+        $validator = Validator::make($data, [
+            'value_id' => 'required',
+            'attr_id' => 'required',
+            'value' => 'required',
+            'property_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
+        $value = AttrValue::where('value_id', $request->value_id)
+            ->where('property_id', $request->property_id)
+            ->where('attr_id', $request->attr_id)->first();
+
+        if ($value == null) {
+            return response()->json([
+                'მონაცემები ვერ მოიძებნა'
+            ], 400);
+        }
+
+        $valueName = $value->valueName;
+        $value->$valueName = $data['value'];
+
+        if ($value->save()) {
+            return response()->json(['ოპერაცია წარმატებით დასრულდა']);
+        }
+
+        return response()->json(['ოპერაციის შესრულების დროს მოხდა შეცდომა'], 500);
     }
 
     public function remove(Request $request)
@@ -120,5 +163,236 @@ class AttrsController extends Controller
         $valueIDs = array_map('intval', $values);
 
         AttrValue::where('attr_id', $attrID)->whereIn('value_id', $valueIDs)->delete();
+    }
+
+    public function withProperties()
+    {
+        $attrID = request()->attr_id;
+        $attribute = Attr::with(['properties'])->find($attrID);
+        $attribute = $this->appendSourceAttrs($attribute);
+
+
+        return $attribute;
+    }
+
+    public function withPropertyValues()
+    {
+        $attrID = request()->attr_id;
+        $valueID = request()->value_id;
+        $attribute = Attr::with(['properties'])->find($attrID);
+        $attribute = $this->appendSourceAttrs($attribute);
+        if ($attribute->type == config('settings.ATTR_TYPES')['tree']) {
+            // $attribute = $this->processTree($attribute);
+        }
+
+        $values = AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get();
+
+        $valueMap = [];
+
+        foreach ($values as $key => $value) {
+            $valueMap[$value->property_id] = $value;
+        }
+
+        $attribute['values'] = $valueMap;
+
+        return $attribute;
+    }
+
+
+
+
+
+
+
+    private function primaryPropertyID($attrID = NULL)
+    {
+        if (is_null($attrID)) {
+            return false;
+        }
+
+        $property = AttrProperty::where('attr_id', $attrID)->where('is_primary', 1)->first();
+        //@
+        if (is_null($property)) {
+            return response()->json([$attrID, 'source has no primary title']);
+        }
+        return $property->id;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function full()
+    {
+        $attribute = Attr::with(['properties', 'values'])->find(request()->attr_id);
+
+        if (is_null($attribute)) {
+            return response()->json(['StatusMessage' => 'მონაცემები ვერ მოიძებნა'], 400);
+        }
+
+        $attribute = $this->appendSourceAttrs($attribute);
+        if ($attribute->type == config('settings.ATTR_TYPES')['tree']) {
+            $attribute['tree'] = $this->processTree($attribute);
+        } else {
+            $attribute = $this->appendSourceAttrs($attribute);
+            $attribute['rows'] = $this->getRows($attribute);
+        }
+
+        return $attribute;
+    }
+
+    private function processTree($attribute = NULL)
+    {
+        if (is_null($attribute)) {
+            return false;
+        }
+
+        $values = [];
+
+        foreach ($attribute->values as $key => $value) {
+            $valueID = intval($attribute->values[$key]['value_id']);
+            $value['property_id'] = intval($value['property_id']);
+            $parentID = $value['p_value_id'];
+            $hasParent = (!is_null($parentID) && $parentID > 0);
+            $parentExists = isset($values[$parentID]);
+
+            if ($hasParent) {
+                continue;
+            }
+
+            if (!isset($values[$valueID])) {
+                $values[$valueID] = [
+                    'data' => ['value_id' => $value['value_id']],
+                    'label' => '',
+                    'children' => []
+                ];
+            }
+
+            $values[$valueID]['data'][$value['property_id']] = $value['value'];
+            $values[$valueID]['label'] .= $value['value'] . '  ';
+        }
+
+        foreach ($attribute->values as $key => $value) {
+            $valueID = intval($attribute->values[$key]['value_id']);
+            $value['property_id'] = intval($value['property_id']);
+            $parentID = $value['p_value_id'];
+            $hasParent = (!is_null($parentID) && $parentID > 0);
+            $parentExists = isset($values[$parentID]);
+
+            if (!$hasParent) {
+                continue;
+            }
+
+            if (!isset($values[$parentID]['children'][$valueID])) {
+                $values[$parentID]['children'][$valueID] = [
+                    'data' => ['value_id' => $value['value_id']],
+                    'label' => '',
+                    'children' => []
+                ];
+            }
+
+            $values[$parentID]['children'][$valueID]['data'][$value['property_id']] = $value['value'];
+            $values[$parentID]['children'][$valueID]['label'] .= $value['value'] . '  ';
+        }
+
+        // foreach ($attribute->values as $key => $value) {
+        //     $valueID = intval($attribute->values[$key]['value_id']);
+        //     $value['property_id'] = intval($value['property_id']);
+        //     $parentID = $value['p_value_id'];
+        //     $hasParent = (!is_null($parentID) && $parentID > 0);
+        //     $parentExists = isset($values[$parentID]);
+        //     // $objectExists = isset($values[$valueID]);
+
+        //     if ($hasParent) {
+        //         if (!$parentExists) {
+        //             $values[$parentID] = [
+        //                 'data' => [],
+        //                 'children' => []
+        //             ];
+        //         }
+
+        //         if (!isset($values[$parentID]['children'][$valueID])) {
+        //             $values[$parentID]['children'][$valueID] = [
+        //                 'data' => [],
+        //                 'children' => []
+        //             ];
+        //         }
+
+        //         $values[$parentID]['children'][$valueID]['data'][$value['property_id']] = $value['value'];
+        //     } else {
+        //         if (!isset($values[$valueID])) {
+        //             $values[$valueID] = [
+        //                 'data' => [
+        //                     ''
+        //                 ],
+        //                 'children' => []
+        //             ];
+        //         }
+
+        //         $values[$valueID]['data'][$value['property_id']] = $value['value'];
+        //     }
+        // }
+
+        return $values;
+    }
+
+    private function appendSourceAttrs($attribute)
+    {
+        if (is_null($attribute)) {
+            return false;
+        }
+
+        foreach ($attribute->properties as $key => $property) {
+            $sourceAttrID = $attribute->properties[$key]['source_attr_id'];
+
+            if (is_null($sourceAttrID)) {
+                continue;
+            }
+
+            $sourceAttr = Attr::with(['properties', 'values'])->where('id', $sourceAttrID)->first();
+            $attribute->properties[$key]['sourceAttribute'] = $sourceAttr;
+
+            if ($sourceAttr->type == config('settings.ATTR_TYPES')['tree']) {
+                $attribute->properties[$key]['tree'] = $this->processTree($sourceAttr);
+            }
+            
+            $attribute->properties[$key]['source'] =
+                AttrValue::where('attr_id',  $sourceAttrID)->where('property_id', $this->primaryPropertyID($sourceAttrID))->get();
+        }
+
+        return $attribute;
+    }
+
+    private function getRows($attribute)
+    {
+        if (is_null($attribute)) {
+            return false;
+        }
+
+        $values = [];
+        foreach ($attribute->values as $key => $value) {
+            $valueID = intval($attribute->values[$key]['value_id']);
+            $value['property_id'] = intval($value['property_id']);
+            // $value['property'] = $attribute->properties[$value['property_id']];
+
+            if (!isset($values[$valueID])) {
+                $values[$valueID] = [
+                    'valueID' => $valueID,
+                    'id' => $value['id']
+                ];
+            }
+
+            $values[$valueID][$value['property_id']] = $value['value'];
+        }
+
+        return array_values($values);
     }
 }

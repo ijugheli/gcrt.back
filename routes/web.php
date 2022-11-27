@@ -20,11 +20,17 @@ $router->get('/', function () use ($router) {
 });
 
 $router->get('/attrs', 'AttrsController@list');
-$router->get('/attrs/{attr_id:[0-9]+}', 'AttrsController@details');
+$router->get('/attrs/{attr_id:[0-9]+}', 'AttrsController@withProperties');
+$router->get('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@withPropertyValues');
 $router->get('/attrs/{attr_id:[0-9]+}/values', 'AttrsController@full');
-$router->get('/attrs/values/{attr_id:[0-9]+}', 'AttrsController@values');
+$router->get('/attrs/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
 $router->post('/attrs/{attr_id:[0-9]+}/values/remove', 'AttrsController@remove');
 $router->post('/attrs/{attr_id:[0-9]+}/values/add', 'AttrsController@addValues');
+$router->post('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}/edit', 'AttrsController@editValues');
+// $router->post('/attrs/{attr_id:[0-9]+}values/edit/{value_id:[0-9]+}', 'AttrsController@edit');
+
+// $router->post('/attrs/values/edit', 'AttrsController@editValue');
+$router->post('/attrs/values/edit', 'AttrsController@editValue');
 
 //Authorization
 $router->post('/user/login', 'AuthController@login');

@@ -16,6 +16,7 @@ class AttrValue extends Model
 
     protected $fillable = [
         'property_id',
+        'p_value_id',
         'value_id',
         'related_value_id',
         'attr_id',
@@ -55,17 +56,22 @@ class AttrValue extends Model
                 return $this->selected;
             }
 
-            foreach ($multi as $item) {
-                if (!isset($item['id']) || !isset($item['name'])) continue;
+            if (isset($multi['id']) && isset($multi['name'])) {
+                $selected[] = $multi['name'];
+                $selectedIDs[] = $multi['id'];
+            } else {
+                foreach ($multi as $item) {
+                    if (!isset($item['id']) || !isset($item['name'])) continue;
 
-                $selected[] = $item['name'];
-                $selectedIDs[] = $item['id'];
+                    $selected[] = $item['name'];
+                    $selectedIDs[] = $item['id'];
+                }
             }
 
             $this->selected = $selected;
             $this->selectedIDs = $selectedIDs;
 
-            return $this['selected'];
+            return $this->selected;
         }
 
         foreach ($this->valueColumns as $column) {
