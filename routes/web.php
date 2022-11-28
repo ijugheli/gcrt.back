@@ -4,7 +4,7 @@
 
 use App\Http\Controllers\AttrsController;
 
-/*
+/*https://www.facebook.com/photo/?fbid=10154038637712376&set=pob.100000064412701
 |--------------------------------------------------------------------------
 | Application Routes
 |--------------------------------------------------------------------------
@@ -23,6 +23,7 @@ $router->get('/attrs', 'AttrsController@list');
 $router->get('/attrs/{attr_id:[0-9]+}', 'AttrsController@withProperties');
 $router->get('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@withPropertyValues');
 $router->get('/attrs/{attr_id:[0-9]+}/values', 'AttrsController@full');
+$router->get('/attrs/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@related');
 $router->get('/attrs/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
 $router->post('/attrs/{attr_id:[0-9]+}/values/remove', 'AttrsController@remove');
 $router->post('/attrs/{attr_id:[0-9]+}/values/add', 'AttrsController@addValues');

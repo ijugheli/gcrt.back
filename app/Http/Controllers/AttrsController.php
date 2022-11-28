@@ -9,13 +9,21 @@ use App\Models\AttrValue;
 use Illuminate\Http\Request;
 use DateTime;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class AttrsController extends Controller
 {
 
     public function list()
     {
-        return Attr::with(['properties'])->get();
+        $attrs = Attr::with(['properties'])->get();
+        foreach ($attrs as $attr) {
+            $result = DB::select('SELECT COUNT(0) as count 
+                                    FROM (SELECT 0 FROM `attr_values` WHERE attr_id = ? GROUP BY value_id) a', [$attr->id]);
+            $attr['count'] = $result[0]->count;
+        }
+
+        return $attrs;
     }
 
     public function values()
@@ -170,6 +178,7 @@ class AttrsController extends Controller
         $attrID = request()->attr_id;
         $attribute = Attr::with(['properties'])->find($attrID);
         $attribute = $this->appendSourceAttrs($attribute);
+        $attribute = $this->appendChildren($attribute);
 
 
         return $attribute;
@@ -181,6 +190,8 @@ class AttrsController extends Controller
         $valueID = request()->value_id;
         $attribute = Attr::with(['properties'])->find($attrID);
         $attribute = $this->appendSourceAttrs($attribute);
+        $attribute = $this->appendChildren($attribute);
+
         if ($attribute->type == config('settings.ATTR_TYPES')['tree']) {
             // $attribute = $this->processTree($attribute);
         }
@@ -226,7 +237,36 @@ class AttrsController extends Controller
 
 
 
+    public function related()
+    {
+        $attrID = request()->attr_id;
+        $valueID = request()->valueID;
+        if (is_null($attrID) || is_null($valueID)) {
+            return false;
+        }
 
+        $attribute = Attr::with(['properties', 'values'])->where('attr_id', $attrID)->get();
+
+        $values = [];
+        foreach ($attribute->values as $key => $value) {
+            $currentValueID = intval($attribute->values[$key]['value_id']);
+            $relatedValueID = intval($attribute->values[$key]['related_value_id']);
+            if ($relatedValueID == $valueID) {
+                $values[$currentValueID] = $value;
+            }
+        }
+
+        $attribute = $this->appendSourceAttrs($attribute);
+        $attribute = $this->appendChildren($attribute);
+        if ($attribute->type == config('settings.ATTR_TYPES')['tree']) {
+            $attribute['tree'] = $this->processTree($attribute);
+        } else {
+            $attribute = $this->appendSourceAttrs($attribute);
+            $attribute['rows'] = $this->getRows($attribute);
+        }
+
+        return $attribute;
+    }
 
 
 
@@ -239,12 +279,29 @@ class AttrsController extends Controller
         }
 
         $attribute = $this->appendSourceAttrs($attribute);
+        $attribute = $this->appendChildren($attribute);
         if ($attribute->type == config('settings.ATTR_TYPES')['tree']) {
             $attribute['tree'] = $this->processTree($attribute);
         } else {
             $attribute = $this->appendSourceAttrs($attribute);
             $attribute['rows'] = $this->getRows($attribute);
         }
+
+        return $attribute;
+    }
+
+    private function appendChildren($attribute = NULL)
+    {
+        if (is_null($attribute)) {
+            return false;
+        }
+
+        $children = Attr::with(['properties', 'values'])->where('p_id', $attribute->id)->get();
+        if (is_null($children) || empty($children)) {
+            return $attribute;
+        }
+
+        $attribute['children'] = $children;
 
         return $attribute;
     }
@@ -363,7 +420,7 @@ class AttrsController extends Controller
             if ($sourceAttr->type == config('settings.ATTR_TYPES')['tree']) {
                 $attribute->properties[$key]['tree'] = $this->processTree($sourceAttr);
             }
-            
+
             $attribute->properties[$key]['source'] =
                 AttrValue::where('attr_id',  $sourceAttrID)->where('property_id', $this->primaryPropertyID($sourceAttrID))->get();
         }
