@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AttrValue extends Model
 {
@@ -43,6 +44,38 @@ class AttrValue extends Model
     public function valueObject()
     {
         return !is_null($this->value_id) ? $this->hasOne(AttrValue::class, 'id', 'value_id') : null;
+    }
+
+    public function childrenCount()
+    {
+        return (DB::select(
+            'SELECT COUNT(0) as count 
+                           FROM (SELECT 0 
+                                  FROM `attr_values` 
+                                 WHERE attr_id = ? AND p_value_id = ?) a',
+            [$this->attr_id, $this->value_id]
+        ))[0]->count;
+    }
+
+    public function getNode($appendLeaf = false)
+    {
+        $node = [
+            'data' => [
+                'value_id' => $this->value_id,
+                'title' => $this->value,
+                $this->property_id => $this->value,
+                'id' => $this->id
+            ],
+            'label' => $this->value,
+            'children' => []
+        ];
+
+        if($appendLeaf) {
+            $node['childrenCount'] = $this->childrenCount();
+            $node['leaf'] = $node['childrenCount'] <= 0;
+        }
+
+        return $node;
     }
 
     public function getValueAttribute()

@@ -18,7 +18,9 @@ class AttrProperty extends Model
         return $this->hasOne(InputViewType::class, 'id', 'input_view_type');
     }
 
-    public function source() {
+    public function source()
+    {
         return $this->hasOne(Attr::class, 'id', 'source_attr_id');
-    }    
+    }
+
 }

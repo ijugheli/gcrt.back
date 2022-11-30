@@ -20,17 +20,16 @@ $router->get('/', function () use ($router) {
 });
 
 $router->get('/attrs', 'AttrsController@list');
-$router->get('/attrs/{attr_id:[0-9]+}', 'AttrsController@withProperties');
-$router->get('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@withPropertyValues');
-$router->get('/attrs/{attr_id:[0-9]+}/values', 'AttrsController@full');
-$router->get('/attrs/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@related');
+$router->get('/attrs/{attr_id:[0-9]+}', 'AttrsController@properties');
+$router->get('/attrs/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
+$router->get('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@value');
+$router->get('/attrs/{attr_id:[0-9]+}/values', 'AttrsController@table');
+$router->get('/attrs/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@relatedTable');
 $router->get('/attrs/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
+$router->post('/attrs/{attr_id:[0-9]+}/title', 'AttrsController@setTitle');
 $router->post('/attrs/{attr_id:[0-9]+}/values/remove', 'AttrsController@remove');
-$router->post('/attrs/{attr_id:[0-9]+}/values/add', 'AttrsController@addValues');
-$router->post('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}/edit', 'AttrsController@editValues');
-// $router->post('/attrs/{attr_id:[0-9]+}values/edit/{value_id:[0-9]+}', 'AttrsController@edit');
-
-// $router->post('/attrs/values/edit', 'AttrsController@editValue');
+$router->post('/attrs/{attr_id:[0-9]+}/values/add', 'AttrsController@addRecord');
+$router->post('/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}/edit', 'AttrsController@editRecord');
 $router->post('/attrs/values/edit', 'AttrsController@editValue');
 
 //Authorization
