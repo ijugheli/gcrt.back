@@ -461,7 +461,7 @@ class AttrsController extends Controller
 
         AttrValue::where('attr_id', $attrID)->whereIn('value_id', $valueIDs)->delete();
 
-        if ($attribute->isTree()) {
+        if ($attribute->isTree) {
             AttrValue::where('attr_id', $attrID)->whereIn('p_value_id', $valueIDs)->delete();
         }
     }
