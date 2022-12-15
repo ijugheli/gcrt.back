@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\DB;
 
 class AttrsController extends Controller
 {
+
+    public function attrs()
+    {
+        $attrs = Attr::with(['properties'])->get();
+
+        return response()->json($attrs);
+    }
+
+
     /**
      * Returns tree nodes for current request;
      *
