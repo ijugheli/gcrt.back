@@ -9,7 +9,7 @@ class Attr extends Model
 {
     protected $table = "attrs";
 
-    protected $fillable = ['p_id', 'status_id', 'title'];
+    protected $fillable = ['p_id', 'type', 'status_id', 'title'];
     protected $appends = ['count', 'isTree'];
     protected $casts = [
         'lazy' => 'boolean'
@@ -43,9 +43,19 @@ class Attr extends Model
         ))[0]->count;
     }
 
-    
+
     public function getIsTreeAttribute()
     {
         return $this->type == config('settings.ATTR_TYPES')['tree'];
+    }
+
+    public function hasOptions()
+    {
+        return $this->type != null && !$this->isEntity();
+    }
+
+    public function isEntity()
+    {
+        return $this->type == config('settings')['ATTR_TYPES']['entity'];
     }
 }

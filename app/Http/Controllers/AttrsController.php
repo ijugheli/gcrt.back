@@ -18,6 +18,13 @@ class AttrsController extends Controller
     {
         $attrs = Attr::with(['properties'])->get();
 
+        foreach ($attrs as $key => $attr) {
+            if (!$attr->hasOptions())
+                continue;
+
+            $attrs[$key]['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();;
+        }
+
         return response()->json($attrs);
     }
 
