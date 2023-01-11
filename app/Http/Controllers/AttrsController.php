@@ -22,7 +22,7 @@ class AttrsController extends Controller
             if (!$attr->hasOptions())
                 continue;
 
-            $attrs[$key]['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();;
+            $attrs[$key]['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
         }
 
         return response()->json($attrs);
@@ -373,23 +373,23 @@ class AttrsController extends Controller
 
         foreach ($values as $entry) {
             $propertyID = $entry[0];
-            $value = $entry[1];
+            $propertyValue = $entry[1];
 
-            if (is_null($value)) {
+            if (is_null($propertyValue)) {
                 continue;
             }
 
-            $value['value_id'] = $valueID;
-            $value['attr_id'] = $attrID;
+            $propertyValue['value_id'] = $valueID;
+            $propertyValue['attr_id'] = $attrID;
 
-            if (!is_null($value['value_date'])) {
-                $value['value_date'] = (new DateTime($value['value_date']))->format('Y-m-d h:m:s');
+            if (!is_null($propertyValue['value_date'])) {
+                $propertyValue['value_date'] = (new DateTime($propertyValue['value_date']))->format('Y-m-d h:m:s');
             }
 
-            unset($value['id']);
-            unset($value['insert_date']);
-            unset($value['update_date']);
-            array_push($sanitizedValues, $value);
+            unset($propertyValue['id']);
+            unset($propertyValue['insert_date']);
+            unset($propertyValue['update_date']);
+            array_push($sanitizedValues, $propertyValue);
         }
 
         Attr::find($attrID)->values()->createMany($sanitizedValues);
