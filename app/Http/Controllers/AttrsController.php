@@ -22,13 +22,104 @@ class AttrsController extends Controller
             if (!$attr->hasOptions())
                 continue;
 
-            $attrs[$key]['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
+            $attrs[$key]['options'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
         }
 
         return response()->json($attrs);
     }
 
+    public function records()
+    {
+        $attrID = request()->attr_id;
+        $values = AttrValue::where('attr_id', $attrID)->get();
+        $records = [];
 
+        foreach ($values as $value) {
+            if (!array_key_exists($value->value_id, $records)) {
+                $records[$value->value_id] = [
+                    'valueID' => $value->value_id,
+                    'attrID' => $value->attr_id,
+                    'values' => []
+                ];
+            }
+
+            array_push($records[$value->value_id]['values'], $value);
+        }
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებულად დასრულდა',
+            'data' => array_values($records)
+        ]);
+    }
+
+
+
+
+
+    public function addRecord(Request $request)
+    {
+        $values = $request->all();
+        $attrID = intval($request->route('attr_id'));
+        $valueID = AttrValue::where('attr_id', $attrID)->max('value_id');
+        $valueID = is_null($valueID) ? 1 : $valueID + 1;
+        $sanitizedValues = [];
+
+        foreach ($values as $entry) {
+            $propertyID = $entry[0];
+            $propertyValue = $entry[1];
+
+            if (is_null($propertyValue)) {
+                continue;
+            }
+
+            $propertyValue['value_id'] = $valueID;
+            $propertyValue['attr_id'] = $attrID;
+
+            if (!is_null($propertyValue['value_date'])) {
+                $propertyValue['value_date'] = (new DateTime($propertyValue['value_date']))->format('Y-m-d h:m:s');
+            }
+
+            unset($propertyValue['id']);
+            unset($propertyValue['insert_date']);
+            unset($propertyValue['update_date']);
+            array_push($sanitizedValues, $propertyValue);
+        }
+
+        Attr::find($attrID)->values()->createMany($sanitizedValues);
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            'record' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////
     /**
      * Returns tree nodes for current request;
      *
@@ -363,39 +454,7 @@ class AttrsController extends Controller
         return Attr::find(request()->attr_id)->values;
     }
 
-    public function addRecord(Request $request)
-    {
-        $values = $request->all();
-        $attrID = intval($request->route('attr_id'));
-        $valueID = AttrValue::where('attr_id', $attrID)->max('value_id');
-        $valueID = is_null($valueID) ? 1 : $valueID + 1;
-        $sanitizedValues = [];
 
-        foreach ($values as $entry) {
-            $propertyID = $entry[0];
-            $propertyValue = $entry[1];
-
-            if (is_null($propertyValue)) {
-                continue;
-            }
-
-            $propertyValue['value_id'] = $valueID;
-            $propertyValue['attr_id'] = $attrID;
-
-            if (!is_null($propertyValue['value_date'])) {
-                $propertyValue['value_date'] = (new DateTime($propertyValue['value_date']))->format('Y-m-d h:m:s');
-            }
-
-            unset($propertyValue['id']);
-            unset($propertyValue['insert_date']);
-            unset($propertyValue['update_date']);
-            array_push($sanitizedValues, $propertyValue);
-        }
-
-        Attr::find($attrID)->values()->createMany($sanitizedValues);
-
-        return response()->json(['ოპერაცია წარმატებით დასრულდა']);
-    }
 
     public function editRecord(Request $request)
     {

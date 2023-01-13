@@ -38,6 +38,9 @@ $router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/add', 'AttrsContr
 $router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}/edit', 'AttrsController@editRecord');
 $router->post($backendPrefix . '/attrs/values/edit', 'AttrsController@editValue');
 
+//records
+$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/records', 'AttrsController@records');
+
 //Authorization
 $router->post($backendPrefix . '/user/login', 'AuthController@login');
 $router->post($backendPrefix . '/user/logout', 'AuthController@logout');
