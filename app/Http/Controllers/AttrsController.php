@@ -96,6 +96,42 @@ class AttrsController extends Controller
     }
 
 
+    public function editRecord(Request $request)
+    {
+        $values = $request->all();
+        $attrID = intval($request->route('attr_id'));
+        $valueID = intval($request->route('value_id'));
+
+        foreach ($values as $entry) {
+            $propertyID = $entry[0];
+            $newValue = $entry[1];
+            $value = AttrValue::where('attr_id', $attrID)->where('property_id', $propertyID)
+                ->where('value_id', $valueID)->first();
+
+            if (is_null($value)) {
+                continue;
+            }
+
+            if ($value['valueName'] == 'value_date' && !is_null($newValue['value_date'])) {
+                $newValue['value_date'] = (new DateTime($newValue['value_date']))->format('Y-m-d h:m:s');
+            }
+
+            if ($value['valueName'] == 'value_boolean') {
+                $newValue['value_boolean'] = isset($newValue['value_boolean']) && $newValue['value_boolean'] == 1 ? 1 : 0;
+            }
+
+            $value->update([$value['valueName'] => $newValue[$value['valueName']]]);
+            $value->save();
+        }
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            'record' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
+        ]);
+    }
+
+
 
 
 
@@ -454,39 +490,6 @@ class AttrsController extends Controller
         return Attr::find(request()->attr_id)->values;
     }
 
-
-
-    public function editRecord(Request $request)
-    {
-        $values = $request->all();
-        $attrID = intval($request->route('attr_id'));
-        $valueID = intval($request->route('value_id'));
-
-        foreach ($values as $entry) {
-            $propertyID = $entry[0];
-            $newValue = $entry[1];
-            $value = AttrValue::where('attr_id', $attrID)->where('property_id', $propertyID)
-                ->where('value_id', $valueID)->first();
-
-            if (is_null($value)) {
-                continue;
-            }
-
-            if ($value['valueName'] == 'value_date' && !is_null($newValue['value_date'])) {
-                $newValue['value_date'] = (new DateTime($newValue['value_date']))->format('Y-m-d h:m:s');
-            }
-
-            if ($value['valueName'] == 'value_boolean') {
-                $newValue['value_boolean'] = isset($newValue['value_boolean']) && $newValue['value_boolean'] == 1 ? 1 : 0;
-            }
-
-            $value->update([$value['valueName'] => $newValue[$value['valueName']]]);
-            $value->save();
-        }
-
-        return response()->json(['ოპერაცია წარმატებით დასრულდა']);
-    }
-
     public function editValue(Request $request)
     {
         $data = $request->only([
@@ -555,7 +558,6 @@ class AttrsController extends Controller
         if ($validator->fails()) {
             return $validator->errors();
         }
-
 
         $attribute = Attr::find($attrID);
 
