@@ -40,6 +40,11 @@ $router->post($backendPrefix . '/attrs/values/edit', 'AttrsController@editValue'
 
 //records
 $router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/records', 'AttrsController@records');
+// $router->get($backendPrefix . '/property/{attr_id:[0-9]+}/add', 'PropertyController@addProperty');
+$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/properties/add', 'PropertyController@addProperty');
+//reorder properties
+$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/properties/reorder', 'PropertyController@reorderProperties');
+
 
 //Authorization
 $router->post($backendPrefix . '/user/login', 'AuthController@login');
