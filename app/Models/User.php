@@ -22,6 +22,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'address',
         'email',
         'password',
+        'status_id',
+    ];
+
+    protected $casts = [
+        'status_id' => 'boolean'
     ];
 
     protected $hidden = ['password'];
@@ -49,5 +54,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function permissions(): HasMany
     {
         return $this->hasMany(UserPermission::class);
+    }
+
+    static public function whereActive()
+    {
+        return self::where('status_id', 1);
     }
 }

@@ -59,4 +59,5 @@ $router->post($backendPrefix . '/user/add', 'UserController@add');
 $router->post($backendPrefix . '/user/edit/{user_id:[0-9]+}', 'UserController@edit');
 $router->post($backendPrefix . '/user/changePassword', 'UserController@changePassword');
 $router->delete($backendPrefix . '/user/{user_id:[0-9]+}', 'UserController@delete');
+$router->post($backendPrefix . '/user/update-status/{user_id:[0-9]+}/{status_id:[0-9]+}', 'UserController@updateStatusID');
 $router->post($backendPrefix . '/user/permissions/add/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@savePermission');

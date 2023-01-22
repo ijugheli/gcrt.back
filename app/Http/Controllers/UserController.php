@@ -155,6 +155,20 @@ class UserController extends Controller
     }
 
 
+    public function updateStatusID(Request $request)
+    {
+        $userID = intval($request->route('user_id'));
+        $statusID = (bool) intval($request->route('status_id'));
+
+        $user = User::where('id', $userID)->first();
+
+        if (is_null($user)) return response()->json(['მომხმარებელი ვერ მოიძებნა'], 400);
+
+        $user->update(['status_id' => $statusID]);
+
+        return response()->json(['ოპერაცია წარმატებით დასრულდა']);
+    }
+
     // ATTR PERMISSIONS
     public function savePermission(Request $request)
     {
