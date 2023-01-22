@@ -31,12 +31,18 @@ $ATTR_TYPES = [
     'entity' => 3,
 ];
 
+$PERMISSION_TYPES = [
+    1 => 'update',
+    2 => 'delete',
+    3 => 'structure',
+];
+
 return [
     'VIEW_TYPES' => $VIEW_TYPES,
     'VIEW_TYPE_IDS' => array_flip($VIEW_TYPES),
     'DATA_TYPES' => $DATA_TYPES,
     'DATA_TYPE_IDS' => array_flip($DATA_TYPES),
-    'ATTR_TYPES' => $ATTR_TYPES
+    'ATTR_TYPES' => $ATTR_TYPES,
+    'PERMISSION_TYPES' => $PERMISSION_TYPES,
+    'PERMISSION_TYPE_IDS' => array_flip($PERMISSION_TYPES),
 ];
-
-

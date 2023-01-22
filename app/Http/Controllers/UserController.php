@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Request;
 use  App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use App\Models\UserPermission;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
 
     public function __construct()
     {
-        $this->middleware('auth:api');
+        // $this->middleware('auth:api');
     }
 
     public function list()
     {
-        return User::all();
+        return response()->json(User::with('permissions')->get());
     }
 
     public function details(Request $request)
@@ -151,5 +152,33 @@ class UserController extends Controller
         }
 
         return response()->json(['ოპერაციის შესრულებისას მოხდა შეცდომა'], 500);
+    }
+
+
+    // ATTR PERMISSIONS
+
+    public function getPermissions(Request $request)
+    {
+        $userID = $request->route('user_id');
+
+        return response()->json(UserPermission::where('user_id', $userID)->get());
+    }
+
+    public function savePermission(Request $request)
+    {
+        $userID = intval($request->route('user_id'));
+        $attrID = intval($request->route('attr_id'));
+        $permissionType = config('settings.PERMISSION_TYPES')[intval($request->permission_type)];
+        $permissionValue = (bool) $request->permission_value;
+
+        $values = ['user_id' => $userID, 'attr_id' => $attrID];
+        $userPermission  = UserPermission::where($values)->first();
+        $values[$permissionType] =  $permissionValue; // append permission type ID+ new value
+
+        if (is_null($userPermission)) return response()->json(UserPermission::create($values));
+
+        $userPermission->update($values);
+
+        return response()->json($userPermission);
     }
 }
