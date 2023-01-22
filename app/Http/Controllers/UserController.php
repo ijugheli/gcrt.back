@@ -25,7 +25,7 @@ class UserController extends Controller
     public function details(Request $request)
     {
         $userID = intval($request->route('user_id'));
-        $user = User::where('id', $userID)->first();
+        $user = User::where('id', $userID)->with(['permissions'])->first();
 
         if ($user === null) {
             return response()->json(['მომხმარებელი ვერ მოიძებნა']);
@@ -156,14 +156,6 @@ class UserController extends Controller
 
 
     // ATTR PERMISSIONS
-
-    public function getPermissions(Request $request)
-    {
-        $userID = $request->route('user_id');
-
-        return response()->json(UserPermission::where('user_id', $userID)->get());
-    }
-
     public function savePermission(Request $request)
     {
         $userID = intval($request->route('user_id'));

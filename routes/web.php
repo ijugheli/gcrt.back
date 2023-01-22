@@ -60,4 +60,3 @@ $router->post($backendPrefix . '/user/edit/{user_id:[0-9]+}', 'UserController@ed
 $router->post($backendPrefix . '/user/changePassword', 'UserController@changePassword');
 $router->delete($backendPrefix . '/user/{user_id:[0-9]+}', 'UserController@delete');
 $router->post($backendPrefix . '/user/permissions/add/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@savePermission');
-$router->get($backendPrefix . '/user/permissions/{user_id:[0-9]+}', 'UserController@getPermissions');
