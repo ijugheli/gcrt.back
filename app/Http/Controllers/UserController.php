@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attr;
 use  App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\UserPermission;
@@ -64,8 +65,21 @@ class UserController extends Controller
         }
 
         $data['password'] = Hash::make($data['password']);
+        $user = User::create($data);
+        $createPermissions = $this->createPermissions($user->id);
 
-        return response()->json(User::create($data));
+        if (!$createPermissions) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'მომხმარებლის უფლებების შენახვისას დაფიქსირდა შეცდომა'
+            ]);
+        }
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'სისტემის მომხმარებელი ' . $user->email . ' წარმატებით დაემატა',
+            'data' => $user
+        ]);
     }
 
     public function edit(Request $request)
@@ -80,22 +94,32 @@ class UserController extends Controller
         ]);
         $user = User::where('id', $userID)->first();
 
-        // dd($user);
-        // return response()->json($user);
-
-        if ($user === null) {
-            return response()->json(['მომხმარებელი ვერ მოიძებნა']);
+        if (is_null($user)) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'მომხმარებელი ვერ მოიძებნა',
+            ]);
         }
 
         if (count($data) <= 0) {
-            return response()->json(['არასაკმარისი მონაცემები']);
+            return response()->json([
+                'code' => 0,
+                'message' => 'არასაკმარისი მონაცემები',
+            ]);
         }
 
         if ($user->update($data)) {
-            return response()->json(['ოპერაცია წარმატებით დასრულდა']);
+            return response()->json([
+                'code' => 1,
+                'message' => 'სისტემის მომხმარებლის ' . $user->email . '-ის რედაქტირება წარმატებით დასრულდა',
+                'data' => $user
+            ]);
         }
 
-        return response()->json(['ოპერაციის შესრულებისას მოხდა შეცდომა']);
+        return response()->json([
+            'code' => 0,
+            'message' => 'ოპერაციის შესრულებისას მოხდა შეცდომა',
+        ]);;
     }
 
     public function changePassword(Request $request)
@@ -142,12 +166,13 @@ class UserController extends Controller
     {
         $userID = intval($request->route('user_id'));
         $user = User::where('id', $userID)->first();
+        $userPermissions = UserPermission::where('user_id', $userID);
 
         if ($user === null) {
             return response()->json(['მომხმარებელი ვერ მოიძებნა'], 400);
         }
 
-        if ($user->delete()) {
+        if ($user->delete() && $userPermissions->delete()) {
             return response()->json(['ოპერაცია წარმატებით დასრულდა'], 200);
         }
 
@@ -181,10 +206,35 @@ class UserController extends Controller
         $userPermission  = UserPermission::where($values)->first();
         $values[$permissionType] =  $permissionValue; // append permission type ID+ new value
 
-        if (is_null($userPermission)) return response()->json(UserPermission::create($values));
+        if (is_null($userPermission)) {
+            $userPermission = UserPermission::create($values);
+        } else {
+            $userPermission->update($values);
+        };
 
-        $userPermission->update($values);
+        if (is_null($userPermission)) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'მომხმარებლის უფლებების ცვლილებისას დაფიქსირდა შეცდომა',
+            ]);
+        };
 
-        return response()->json($userPermission);
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            'data' => $userPermission
+        ]);
+    }
+
+    private function createPermissions(int $userID): bool
+    {
+        $attrIDS = Attr::select('id')->get()->pluck('id');
+        $permissions = [];
+
+        foreach ($attrIDS as $attrID) {
+            $permissions[] =  ['user_id' => $userID, 'attr_id' => $attrID, 'update' => false, 'delete' => false, 'structure' => false];
+        }
+
+        return UserPermission::insert($permissions);
     }
 }
