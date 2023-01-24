@@ -44,6 +44,8 @@ $router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/records', 'AttrsControlle
 $router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/properties/add', 'PropertyController@addProperty');
 //reorder properties
 $router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/properties/reorder', 'PropertyController@reorderProperties');
+$router->post($backendPrefix . '/attrs/properties/{property_id:[0-9]+}/update', 'PropertyController@updateProperty');
+$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/update-lazy-status-id', 'PropertyController@updateLazyOrStatusID');
 
 
 //Authorization

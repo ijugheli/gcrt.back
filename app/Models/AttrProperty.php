@@ -9,6 +9,8 @@ class AttrProperty extends Model
     protected $table = "attr_properties";
     public $timestamps = false;
     protected $fillable = [
+        'id',
+        'p_id',
         'source_attr_id',
         'title',
         'input_data_type',

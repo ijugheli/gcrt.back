@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Attr;
+use App\Models\AttrValue;
 use App\Models\AttrProperty;
+use Illuminate\Http\Request;
 
 
 class PropertyController extends Controller
 {
-  
+    public function addProperty(Request $request)
+    {
 
-
-    public function addProperty(Request $request) {
-        
         $values = $request->all();
         $attrID = intval($request->route('attr_id'));
         $lastPropertyOrderID = AttrProperty::where('attr_id', $attrID)->get()->max('order_id');
@@ -31,35 +31,82 @@ class PropertyController extends Controller
 
 
         return AttrProperty::create($propertyData);
-
-
     }
 
-    public function removeProperty(Request $request) {
+    public function removeProperty(Request $request)
+    {
         $attrID = intval(request()->attr_id);
-        
+
         $propertyID = $request['property_id'];
         $property = AttrProperty::where('id', $propertyID)->first();
     }
 
-    public function reorderProperties(Request $request) {
-        $values = $request->all();     
+    public function updateProperty(Request $request)
+    {
+        $propertyID = $request->route('property_id');
+        $data = $request->property;
+        $property = AttrProperty::where('id', $propertyID)->first();
+
+        if (is_null($property)) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'ატრიბუტი ვერ მოიძებნა'
+            ]);
+        }
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            'data' => $data
+        ]);
+        // $property->update($data);
+
+    }
+
+    public function reorderProperties(Request $request)
+    {
+        $values = $request->all();
         $orderID = 1;
-        foreach($values as $val) {
+        foreach ($values as $val) {
             // print_r($val);
             $propertyID = intVal($val);
             $property = AttrProperty::find($propertyID);
             // print_r($property);
             $property['order_id'] = $orderID;
             $property->save();
-            $orderID++; 
+            $orderID++;
         }
 
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა'
-        ]); 
+        ]);
     }
 
 
+    public function updateLazyOrStatusID(Request $request)
+    {
+        $attrID = $request->route('attr_id');
+        $isLazy = (bool) intval($request->is_lazy); // 0 Lazy 1 Status
+        $value = (bool) intval($request->value);
+        $attr = Attr::where('id', $attrID)->first();
+
+        if (is_null($attr)) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'ატრიბუტი ვერ მოიძებნა'
+            ]);
+        }
+
+        if ($isLazy) {
+            $attr->update(['lazy' => $value]);
+        } else {
+            $attr->update(['status_id' => $value]);
+        }
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            'data' => $attr
+        ]);
+    }
 }

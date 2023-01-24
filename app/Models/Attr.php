@@ -9,10 +9,11 @@ class Attr extends Model
 {
     protected $table = "attrs";
 
-    protected $fillable = ['p_id', 'type', 'status_id', 'title'];
+    protected $fillable = ['p_id', 'type', 'status_id', 'title', 'lazy'];
     protected $appends = ['count', 'isTree'];
     protected $casts = [
-        'lazy' => 'boolean'
+        'lazy' => 'boolean',
+        'status_id' => 'boolean'
     ];
     public $timestamps = false;
 
@@ -34,9 +35,9 @@ class Attr extends Model
     public function getCountAttribute()
     {
         return (DB::select(
-            'SELECT COUNT(0) as count 
-                             FROM (SELECT 0 
-                                     FROM `attr_values` 
+            'SELECT COUNT(0) as count
+                             FROM (SELECT 0
+                                     FROM `attr_values`
                                     WHERE attr_id = ? GROUP BY value_id
                                    ) a',
             [$this->id]
