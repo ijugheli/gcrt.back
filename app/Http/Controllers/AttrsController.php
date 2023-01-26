@@ -131,6 +131,28 @@ class AttrsController extends Controller
         ]);
     }
 
+    public function updateAttr(Request $request)
+    {
+        $attrID = $request->route('attr_id');
+        $data = $request->data;
+        $attr = Attr::find($attrID);
+
+        if (is_null($attr)) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'ატრიბუტი ვერ მოიძებნა'
+            ]);
+        }
+
+        $attr->update($data);
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            'data' => $attr
+        ]);
+    }
+
 
 
 

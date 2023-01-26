@@ -44,8 +44,8 @@ class PropertyController extends Controller
     public function updateProperty(Request $request)
     {
         $propertyID = $request->route('property_id');
-        $data = $request->property;
-        $property = AttrProperty::where('id', $propertyID)->first();
+        $data = $request->data;
+        $property = AttrProperty::find($propertyID);
 
         if (is_null($property)) {
             return response()->json([
@@ -53,10 +53,13 @@ class PropertyController extends Controller
                 'message' => 'ატრიბუტი ვერ მოიძებნა'
             ]);
         }
+
+        $property->update($data);
+
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'data' => $data
+            'data' => $property
         ]);
         // $property->update($data);
 
@@ -79,34 +82,6 @@ class PropertyController extends Controller
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა'
-        ]);
-    }
-
-
-    public function updateLazyOrStatusID(Request $request)
-    {
-        $attrID = $request->route('attr_id');
-        $isLazy = (bool) intval($request->is_lazy); // 0 Lazy 1 Status
-        $value = (bool) intval($request->value);
-        $attr = Attr::where('id', $attrID)->first();
-
-        if (is_null($attr)) {
-            return response()->json([
-                'code' => 0,
-                'message' => 'ატრიბუტი ვერ მოიძებნა'
-            ]);
-        }
-
-        if ($isLazy) {
-            $attr->update(['lazy' => $value]);
-        } else {
-            $attr->update(['status_id' => $value]);
-        }
-
-        return response()->json([
-            'code' => 1,
-            'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'data' => $attr
         ]);
     }
 }
