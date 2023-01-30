@@ -24,7 +24,7 @@ class PropertyController extends Controller
         $propertyData['input_view_type']   = intVal($values['data_view']['id']);
         $propertyData['is_mandatory']      = intVal($values['is_mandatory']);
         $propertyData['has_filter']        = intVal($values['has_filter']);
-        // $propertyData['is_primary']        = intVal($values['is_primary']);
+        $propertyData['is_primary']        = intVal($values['is_primary']);
         $propertyData['attr_id']           = intVal($values['parent_id']);
         $propertyData['type']              = intVal($values['type']['id']);
         $propertyData['order_id']          = intVal($lastPropertyOrderID) + 1;
@@ -56,13 +56,15 @@ class PropertyController extends Controller
 
         $property->update($data);
 
+        if ($property->is_primary) {
+            AttrProperty::where('id', '!=', $propertyID)->where('attr_id', $property->attr_id)->update(['is_primary' => 0]);
+        }
+
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
             'data' => $property
         ]);
-        // $property->update($data);
-
     }
 
     public function reorderProperties(Request $request)
@@ -70,10 +72,8 @@ class PropertyController extends Controller
         $values = $request->all();
         $orderID = 1;
         foreach ($values as $val) {
-            // print_r($val);
             $propertyID = intVal($val);
             $property = AttrProperty::find($propertyID);
-            // print_r($property);
             $property['order_id'] = $orderID;
             $property->save();
             $orderID++;

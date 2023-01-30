@@ -17,7 +17,7 @@ class AttrProperty extends Model
         'input_view_type',
         'is_mandatory',
         'has_filter',
-        // 'is_primary',
+        'is_primary',
         'attr_id',
         'type',
         'order_id',
