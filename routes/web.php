@@ -24,42 +24,51 @@ $router->get('/', function () use ($router) {
 
 
 
-$router->get($backendPrefix . '/attrs', 'AttrsController@list');
-$router->get($backendPrefix . '/attrs/static', 'AttrsController@attrs');
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}', 'AttrsController@properties');
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@value');
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/values', 'AttrsController@table');
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@relatedTable');
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/title', 'AttrsController@setTitle');
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/remove', 'AttrsController@remove');
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/add', 'AttrsController@addRecord');
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/values/{value_id:[0-9]+}/edit', 'AttrsController@editRecord');
-$router->post($backendPrefix . '/attrs/values/edit', 'AttrsController@editValue');
+$router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function () use ($router) {
+    $router->group(['prefix' => '/attrs'], function () use ($router) {
+        $router->get('', 'AttrsController@list');
+        $router->get('/static', 'AttrsController@attrs');
+        $router->get('/{attr_id:[0-9]+}', 'AttrsController@properties');
+        $router->get('/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
+        $router->get('/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@value');
+        $router->get('/{attr_id:[0-9]+}/values', 'AttrsController@table');
+        $router->get('/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@relatedTable');
+        $router->get('/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
+        $router->post('/{attr_id:[0-9]+}/title', 'AttrsController@setTitle');
+        $router->post('/{attr_id:[0-9]+}/values/remove', 'AttrsController@remove');
+        $router->post('/{attr_id:[0-9]+}/values/add', 'AttrsController@addRecord');
+        $router->post('/{attr_id:[0-9]+}/values/{value_id:[0-9]+}/edit', 'AttrsController@editRecord');
+        $router->post('/values/edit', 'AttrsController@editValue');
+        // records
+        $router->get('/{attr_id:[0-9]+}/records', 'AttrsController@records');
+        $router->post('/{attr_id:[0-9]+}/update', 'AttrsController@updateAttr');
 
-//records
-$router->get($backendPrefix . '/attrs/{attr_id:[0-9]+}/records', 'AttrsController@records');
-// $router->get($backendPrefix . '/property/{attr_id:[0-9]+}/add', 'PropertyController@addProperty');
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/properties/add', 'PropertyController@addProperty');
-//reorder properties
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/properties/reorder', 'PropertyController@reorderProperties');
-$router->post($backendPrefix . '/attrs/properties/{property_id:[0-9]+}/update', 'PropertyController@updateProperty');
-$router->post($backendPrefix . '/attrs/{attr_id:[0-9]+}/update', 'AttrsController@updateAttr');
+        $router->post('/{attr_id:[0-9]+}/properties/add', 'PropertyController@addProperty');
+        $router->post('/{attr_id:[0-9]+}/properties/reorder', 'PropertyController@reorderProperties');
+        $router->post('/properties/{property_id:[0-9]+}/update', 'PropertyController@updateProperty');
+    });
+
+    // User Management
+    $router->group(['prefix' => '/user'], function () use ($router) {
+        $router->get('/list', 'UserController@list');
+        $router->get('/{user_id:[0-9]+}', 'UserController@details');
+        $router->post('/add', 'UserController@add');
+        $router->post('/edit/{user_id:[0-9]+}', 'UserController@edit');
+        $router->post('/changePassword', 'UserController@changePassword');
+        $router->delete('/{user_id:[0-9]+}', 'UserController@delete');
+        $router->post('/update-status/{user_id:[0-9]+}/{status_id:[0-9]+}', 'UserController@updateStatusID');
+        $router->post('/permissions/add/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@savePermission');
+    });
+});
+
+// Authorization
+$router->group(['prefix' => $backendPrefix . '/user'], function () use ($router) {
+    $router->post('/login', 'AuthController@login');
+    $router->post('/logout', 'AuthController@logout');
+    $router->post('/refresh', 'AuthController@refresh');
+    $router->get('/profile', 'AuthController@me');
+});
 
 
-//Authorization
-$router->post($backendPrefix . '/user/login', 'AuthController@login');
-$router->post($backendPrefix . '/user/logout', 'AuthController@logout');
-$router->post($backendPrefix . '/user/refresh', 'AuthController@refresh');
-$router->get($backendPrefix . '/user/profile', 'AuthController@me');
-
-//User Management
-$router->get($backendPrefix . '/user/list', 'UserController@list');
-$router->get($backendPrefix . '/user/{user_id:[0-9]+}', 'UserController@details');
-$router->post($backendPrefix . '/user/add', 'UserController@add');
-$router->post($backendPrefix . '/user/edit/{user_id:[0-9]+}', 'UserController@edit');
-$router->post($backendPrefix . '/user/changePassword', 'UserController@changePassword');
-$router->delete($backendPrefix . '/user/{user_id:[0-9]+}', 'UserController@delete');
-$router->post($backendPrefix . '/user/update-status/{user_id:[0-9]+}/{status_id:[0-9]+}', 'UserController@updateStatusID');
-$router->post($backendPrefix . '/user/permissions/add/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@savePermission');
+// $router->group(['prefix' => '$backendPrefix'], function () use ($router) {
+// });
