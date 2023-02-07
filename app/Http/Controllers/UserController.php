@@ -162,6 +162,44 @@ class UserController extends Controller
         return response()->json(['StatusMessage' => 'ოპერაციის შესრულების დროს მოხდა შეცდომა'], 500);
     }
 
+
+    public function updatePassword(Request $request)
+    {
+        $data = $request->only([
+            'email',
+            'password',
+            'password_confirmation',
+        ]);
+
+        $validator = Validator::make($data, [
+            'email' => 'required',
+            'password' => 'required',
+            'password_confirmation' => 'required',
+        ]);
+
+        $user = User::where('email', $data['email'])->first();
+
+
+
+        if (is_null($user)) {
+            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
+        }
+
+        if ($data['password'] != $data['password_confirmation']) {
+            return response()->json(['code' => 0, 'message' => 'პაროლები არ ემთხვევა ერთმანეთს'], 400);
+        }
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
+        if (!$user->update(['password' => Hash::make($data['password'])])) {
+            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
+        }
+
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
+    }
+
     public function delete(Request $request)
     {
         $userID = intval($request->route('user_id'));

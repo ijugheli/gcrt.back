@@ -1,4 +1,16 @@
 <?php
+$ACTION_TYPES = [
+    1 => 'RECOVER_PASSWORD',
+    2 => 'OTP',
+];
+
+$VALIDATION_TYPES = [
+    1 => 'EMAIL',
+    2 => 'PHONE',
+];
+
+$CODE_EXPIRY_TIME = 60 * 6; // seconds
+
 $VIEW_TYPES = [
     1 => 'input',
     2 => 'textarea',
@@ -45,4 +57,9 @@ return [
     'ATTR_TYPES' => $ATTR_TYPES,
     'PERMISSION_TYPES' => $PERMISSION_TYPES,
     'PERMISSION_TYPE_IDS' => array_flip($PERMISSION_TYPES),
+    'ACTION_TYPES' => $ACTION_TYPES,
+    'ACTION_TYPE_IDS' => array_flip($ACTION_TYPES),
+    'VALIDATION_TYPES' => $VALIDATION_TYPES,
+    'VALIDATION_TYPE_IDS' => array_flip($VALIDATION_TYPES),
+    'CODE_EXPIRY_TIME' => $CODE_EXPIRY_TIME
 ];

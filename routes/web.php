@@ -67,6 +67,9 @@ $router->group(['prefix' => $backendPrefix . '/user'], function () use ($router)
     $router->post('/logout', 'AuthController@logout');
     $router->post('/refresh', 'AuthController@refresh');
     $router->get('/profile', 'AuthController@me');
+    $router->post('/send-recovery-link', 'AuthController@sendCode');
+    $router->post('/validate-recovery-link', 'AuthController@validateCode');
+    $router->post('/update-password', 'UserController@updatePassword');
 });
 
 

@@ -40,16 +40,17 @@ class Authenticate extends RefreshToken
         try {
             $user = $this->authenticate($request);
         } catch (Exception $e) {
-            if ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException) {
-                return response()->json(['code' => 0, 'message' => 'Token is invalid'], 401);
+            if (($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException) ||
+                ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException) ||
+                ($e instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException && $e->getMessage() == 'Token has expired and can no longer be refreshed')
+            ) {
+                return response()->json(['code' => 0, 'message' => 'Token is invalid or blacklisted'], 401);
             } else if ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException) {
                 $this->handleExpiredToken($request, $next($request));
             } else if ($e instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException && $e->getMessage() == 'Token has expired') {
-                if ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException) {
-                    return $this->handleExpiredToken($request, $next($request));
-                }
                 return $this->handleExpiredToken($request, $next($request));
             }
+            return response()->json(['code' => 0, 'message' => 'Unauthorized'], 401);
         }
 
         return $next($request);
