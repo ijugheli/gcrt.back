@@ -56,6 +56,32 @@ class AttrsController extends Controller
 
 
 
+    public function addAttribute(Request $request)
+    {
+        $data = $request->only([
+            'p_id',
+            'type',
+            'title',
+            'is_lazy',
+            'status_id',
+        ]);
+
+        $validator = Validator::make($data, [
+            'type' => 'required',
+            'title' => 'required',
+            'is_lazy' => 'required',
+            'status_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
+        if (!Attr::create($data)) {
+            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
+        }
+        return response()->json(['code' => 1, 'message' => 'ატრიბუტი წარმატებით დაემატა']);
+    }
 
     public function addRecord(Request $request)
     {

@@ -27,6 +27,7 @@ $router->get('/', function () use ($router) {
 $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function () use ($router) {
     $router->group(['prefix' => '/attrs'], function () use ($router) {
         $router->get('', 'AttrsController@list');
+        $router->post('/add', 'AttrsController@addAttribute');
         $router->get('/static', 'AttrsController@attrs');
         $router->get('/{attr_id:[0-9]+}', 'AttrsController@properties');
         $router->get('/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
