@@ -43,6 +43,8 @@ class PropertyController extends Controller
             'is_mandatory' => 'required',
         ]);
 
+
+
         if ($validator->fails()) {
             return $validator->errors();
         }
@@ -57,9 +59,7 @@ class PropertyController extends Controller
             AttrProperty::where('id', '!=', $property->id)->where('p_id', $property->p_id)->where('attr_id', $property->attr_id)->update(['is_primary' => 0]);
         }
 
-        $data = AttrProperty::where('attr_id', $property->attr_id)->get();
-
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' => $data]);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
     }
 
     public function addSection(Request $request)
@@ -96,10 +96,7 @@ class PropertyController extends Controller
         if (!$property) {
             return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
-
-        $data = AttrProperty::where('attr_id', $property->attr_id)->get();
-
-        return response()->json(['code' => 1, 'message' => 'სექცია წარმატებით დაემატა', 'data' => $data]);
+        return response()->json(['code' => 1, 'message' => 'სექცია წარმატებით დაემატა']);
     }
 
     public function removeProperty(Request $request)
@@ -131,8 +128,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'code' => 1,
-            'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'data' => $property
+            'message' => 'ოპერაცია წარმატებით დასრულდა'
         ]);
     }
 
