@@ -28,6 +28,8 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
     $router->group(['prefix' => '/attrs'], function () use ($router) {
         $router->get('', 'AttrsController@list');
         $router->post('/add', 'AttrsController@addAttribute');
+        $router->post('/add-section', 'PropertyController@addSection');
+        $router->post('/add-section-property', 'PropertyController@addProperty');
         $router->get('/static', 'AttrsController@attrs');
         $router->get('/{attr_id:[0-9]+}', 'AttrsController@properties');
         $router->get('/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
@@ -44,7 +46,6 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->get('/{attr_id:[0-9]+}/records', 'AttrsController@records');
         $router->post('/{attr_id:[0-9]+}/update', 'AttrsController@updateAttr');
 
-        $router->post('/{attr_id:[0-9]+}/properties/add', 'PropertyController@addProperty');
         $router->post('/{attr_id:[0-9]+}/properties/reorder', 'PropertyController@reorderProperties');
         $router->post('/properties/{property_id:[0-9]+}/update', 'PropertyController@updateProperty');
     });

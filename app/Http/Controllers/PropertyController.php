@@ -2,35 +2,101 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attr;
-use App\Models\AttrValue;
 use App\Models\AttrProperty;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 
 class PropertyController extends Controller
 {
     public function addProperty(Request $request)
     {
+        $data = $request->only([
+            'p_id',
+            'source_attr_id',
+            'title',
+            'input_data_type',
+            'input_view_type',
+            'is_mandatory',
+            'has_filter',
+            'is_primary',
+            'attr_id',
+            'type',
+            'order_id',
+        ]);
 
-        $values = $request->all();
-        $attrID = intval($request->route('attr_id'));
-        $lastPropertyOrderID = AttrProperty::where('attr_id', $attrID)->get()->max('order_id');
-        $propertyData = [];
+        $lastPropertyOrderID = AttrProperty::where('attr_id', $data['attr_id'])->where('type', 1)->max('order_id') + 1;
 
-        $propertyData['source_attr_id']    = intVal($values['source']['id']);
-        $propertyData['title']             = $values['title'];
-        $propertyData['input_data_type']   = intVal($values['data_type']['id']);
-        $propertyData['input_view_type']   = intVal($values['data_view']['id']);
-        $propertyData['is_mandatory']      = intVal($values['is_mandatory']);
-        $propertyData['has_filter']        = intVal($values['has_filter']);
-        $propertyData['is_primary']        = intVal($values['is_primary']);
-        $propertyData['attr_id']           = intVal($values['parent_id']);
-        $propertyData['type']              = intVal($values['type']['id']);
-        $propertyData['order_id']          = intVal($lastPropertyOrderID) + 1;
+        $data['order_id'] = $lastPropertyOrderID;
+
+        $validator = Validator::make($data, [
+            'p_id' => 'required',
+            'source_attr_id' => 'required',
+            'title' => 'required',
+            'has_filter' => 'required',
+            'is_primary' => 'required',
+            'attr_id' => 'required',
+            'type' => 'required',
+            'order_id' => 'required',
+            'input_data_type' => 'required',
+            'input_view_type' => 'required',
+            'is_mandatory' => 'required',
+        ]);
 
 
-        return AttrProperty::create($propertyData);
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
+        $property = AttrProperty::create($data);
+
+        if (!$property) {
+            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
+        }
+
+        if ($property->is_primary) {
+            AttrProperty::where('id', '!=', $property->id)->where('p_id', $property->p_id)->where('attr_id', $property->attr_id)->update(['is_primary' => 0]);
+        }
+
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
+    }
+
+    public function addSection(Request $request)
+    {
+        $data = $request->only([
+            'attr_id',
+            'title',
+        ]);
+
+        $validator = Validator::make($data, [
+            'attr_id' => 'required',
+            'title' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
+        $section = [
+            'p_id' => 0,
+            'attr_id' => intval($data['attr_id']),
+            'title' => $data['title'],
+            'input_data_type' => 1,
+            'input_view_type' => 1,
+            'is_mandatory' => 1,
+            'has_filter' => 1,
+            'is_primary' => 0,
+            'type' => 2,
+            'order_id' => AttrProperty::where('attr_id', intval($data['attr_id']))->where('type', 2)->max('order_id') + 1,
+        ];
+
+        $property = AttrProperty::create($section);
+
+        if (!$property) {
+            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
+        }
+        return response()->json(['code' => 1, 'message' => 'სექცია წარმატებით დაემატა']);
     }
 
     public function removeProperty(Request $request)
@@ -62,8 +128,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'code' => 1,
-            'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'data' => $property
+            'message' => 'ოპერაცია წარმატებით დასრულდა'
         ]);
     }
 
