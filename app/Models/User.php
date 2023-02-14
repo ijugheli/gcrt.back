@@ -23,10 +23,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'email',
         'password',
         'status_id',
+        'otp_enabled'
     ];
 
     protected $casts = [
-        'status_id' => 'boolean'
+        'status_id' => 'boolean',
+        'otp_enabled' => 'boolean'
     ];
 
     protected $hidden = ['password'];
@@ -59,5 +61,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     static public function whereActive()
     {
         return self::where('status_id', 1);
+    }
+
+    public function isOTPEnabled()
+    {
+        return $this->otp_enabled;
     }
 }

@@ -29,17 +29,17 @@ class CodeSenderService
         $time = Carbon::now();
         $model = new UserValidationCode;
         $model->user_id = $user->id;
-        $model->code = $actionType == config('settings.ACTION_TYPE_IDS.RECOVER_PASSWORD') ? sha1(time()) : rand(6, 6);
+        $model->code = $actionType == config('settings.ACTION_TYPE_IDS.RECOVER_PASSWORD') ? sha1(time()) : intval(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
         $model->action_type = $actionType;
         $model->validation_type = $validationType;
         $model->created_at = $time;
         $model->expires_at = $time->addSeconds(config('settings.CODE_EXPIRY_TIME'));
+
         if (!$model->save()) {
             return false;
         }
 
-
-        if (!$this->emailService->send($user->email, $model->code)) {
+        if (!$this->emailService->send($user->email, $model->code, $actionType)) {
             return false;
         }
 
@@ -50,12 +50,15 @@ class CodeSenderService
 
 class EmailService
 {
-    public function send($email, $hash)
+    public function send($email, $hash, int $actionType)
     {
-        $data = ['link' =>  env('APP_URL') . ':4200' . '/update-password?hash=' . $hash . '&email=' . $email];
-        Mail::send('mail', $data, function ($message) use ($email) {
+        $checkActionType = $actionType == config('settings.ACTION_TYPE_IDS.RECOVER_PASSWORD');
+        $data = $checkActionType ?  ['link' =>  env('APP_URL') . ':4200' . '/update-password?hash=' . $hash . '&email=' . $email] : ['code' => $hash];
+
+        Mail::send($checkActionType ? 'password' : 'otp', $data, function ($message) use ($email) {
             $message->to($email)->subject('პაროლის აღდგენა GCRT');
         });
+
         return true;
     }
 }

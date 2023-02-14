@@ -57,7 +57,7 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->post('/edit/{user_id:[0-9]+}', 'UserController@edit');
         $router->post('/changePassword', 'UserController@changePassword');
         $router->delete('/{user_id:[0-9]+}', 'UserController@delete');
-        $router->post('/update-status/{user_id:[0-9]+}/{status_id:[0-9]+}', 'UserController@updateStatusID');
+        $router->post('/update-boolean-columns/{user_id:[0-9]+}', 'UserController@updateBooleanColumns');
         $router->post('/permissions/add/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@savePermission');
     });
 });

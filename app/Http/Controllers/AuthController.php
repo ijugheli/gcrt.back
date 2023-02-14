@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Services\CodeSenderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use  App\Models\User;
+use App\Models\User;
 use App\Models\UserValidationCode;
 
 class AuthController extends Controller
@@ -14,7 +14,7 @@ class AuthController extends Controller
 
     public function __construct(CodeSenderService $codeSenderService)
     {
-        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'logout','validateCode', 'sendCode']]);
+        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'logout', 'validateCode', 'sendCode']]);
         $this->codeSenderService = $codeSenderService;
     }
 
@@ -34,8 +34,23 @@ class AuthController extends Controller
 
         $credentials = $request->only(['email', 'password']);
 
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user) {
+            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 401);
+        }
+
+        if (!Auth::validate($credentials)) {
+            return response()->json(['code' => 0, 'message' => 'გთხოვთ სცადოთ განსხვავებული პარამეტრები'], 401);
+        }
+
+        // if ($user->isOTPEnabled()) {
+        //     return $this->sendCode(config('settings.ACTION_TYPE_IDS.OTP'), config('settings.VALIDATION_TYPE_IDS.EMAIL'), $user);
+        // }
+
         if (!$token = Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['code' => 0, 'message' => 'Unauthorized'], 401);
         }
 
         return $this->respondWithToken($token);
@@ -52,38 +67,37 @@ class AuthController extends Controller
     }
 
 
-    public function sendCode()
+    public function sendCode(int $actionType, int $validationType, ?User $user)
     {
-        $user = User::where('email', request()->email)->first();
+        $user = $user ?? User::where('email', request()->email)->first();
 
         if (is_null($user)) {
             return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
         }
 
         // Temporary solution
-        if (!$this->codeSenderService->send(1, 1, $user)) {
-            return response()->json(['code' => 0, 'message' => 'გთხოვთ სცადოთ მოგვიანებიტ'], 400);
+        if (!$this->codeSenderService->send($actionType, $validationType, $user)) {
+            return response()->json(['code' => 0, 'message' => 'გთხოვთ სცადოთ მოგვიანებით'], 400);
         }
 
-        return response()->json(['code' => 1, 'message' => 'ლინკი წარმატებით გამოიგზავნა თქვენს ელ-ფოსტაზე']);
+        return response()->json(['code' => 1, 'message' => 'ლინკი/კოდი წარმატებით გამოიგზავნა თქვენს ელ-ფოსტაზე']);
     }
 
     public function validateCode()
     {
         $code = request()->code;
-        $email = request()->email;
-        $user = User::where('email', $email)->first();
-        $validated = UserValidationCode::where('user_id', $user->id)->where('code', $code)->first();
+        $validationCode = UserValidationCode::where('code', $code)->with('user')->first();
 
-        if (is_null($user)) {
-            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
+        if (is_null($validationCode)) {
+            return response()->json(['code' => 0, 'message' => 'ლინკი/კოდი არავალიდურია'], 400);
         }
 
-        if (is_null($validated)) {
-            return response()->json(['code' => 0, 'message' => 'ლინკი არავალიდურია'], 400);
+        if ($validationCode->action_type == config('settings.ACTION_TYPE_IDS.OTP')) {
+            $validationCode->delete();
+            return $this->respondWithToken(Auth::login($validationCode->user));
         }
 
-        $validated->delete();
+        $validationCode->delete();
 
         return response()->json(['code' => 1, 'message' => 'Success']);
     }
@@ -120,10 +134,14 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'user' => auth()->user(),
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'code' => 1,
+            'message' => 'ავტორიზაცია წარმატებით დასრულდა',
+            'data' => [
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'user' => auth()->user(),
+                'expires_in' => auth()->factory()->getTTL() * 60
+            ],
         ]);
     }
 }

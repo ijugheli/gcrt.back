@@ -28,8 +28,8 @@ class UserController extends Controller
         $userID = intval($request->route('user_id'));
         $user = User::where('id', $userID)->with(['permissions'])->first();
 
-        if ($user === null) {
-            return response()->json(['მომხმარებელი ვერ მოიძებნა']);
+        if (is_null($user)) {
+            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა']);
         }
 
         return response()->json($user);
@@ -203,7 +203,7 @@ class UserController extends Controller
     public function delete(Request $request)
     {
         $userID = intval($request->route('user_id'));
-        $user = User::where('id', $userID)->first();
+        $user = User::find($userID);
         $userPermissions = UserPermission::where('user_id', $userID);
 
         if ($user === null) {
@@ -218,18 +218,19 @@ class UserController extends Controller
     }
 
 
-    public function updateStatusID(Request $request)
+    public function updateBooleanColumns(Request $request)
     {
         $userID = intval($request->route('user_id'));
-        $statusID = (bool) intval($request->route('status_id'));
+        $statusID = (bool) intval($request->status_id);
+        $otpEnabled = (bool) intval($request->otp_enabled);
 
-        $user = User::where('id', $userID)->first();
+        $user = User::find($userID);
 
-        if (is_null($user)) return response()->json(['მომხმარებელი ვერ მოიძებნა'], 400);
+        if (is_null($user)) return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
 
-        $user->update(['status_id' => $statusID]);
+        $user->update(['status_id' => $statusID, 'otp_enabled' => $otpEnabled]);
 
-        return response()->json(['ოპერაცია წარმატებით დასრულდა']);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
     }
 
     // ATTR PERMISSIONS
