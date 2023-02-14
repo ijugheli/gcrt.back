@@ -55,8 +55,8 @@ class EmailService
         $checkActionType = $actionType == config('settings.ACTION_TYPE_IDS.RECOVER_PASSWORD');
         $data = $checkActionType ?  ['link' =>  env('APP_URL') . ':4200' . '/update-password?hash=' . $hash . '&email=' . $email] : ['code' => $hash];
 
-        Mail::send($checkActionType ? 'password' : 'otp', $data, function ($message) use ($email) {
-            $message->to($email)->subject('პაროლის აღდგენა GCRT');
+        Mail::send($checkActionType ? 'password' : 'otp', $data, function ($message) use ($email, $checkActionType) {
+            $message->to($email)->subject($checkActionType ? 'პაროლის აღდგენა GCRT' : 'ავტორიზაციის კოდი GCRT');
         });
 
         return true;
