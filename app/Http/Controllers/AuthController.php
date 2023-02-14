@@ -45,9 +45,9 @@ class AuthController extends Controller
             return response()->json(['code' => 0, 'message' => 'გთხოვთ სცადოთ განსხვავებული პარამეტრები'], 401);
         }
 
-        // if ($user->isOTPEnabled()) {
-        //     return $this->sendCode(config('settings.ACTION_TYPE_IDS.OTP'), config('settings.VALIDATION_TYPE_IDS.EMAIL'), $user);
-        // }
+        if ($user->isOTPEnabled()) {
+            return $this->sendCode(config('settings.ACTION_TYPE_IDS.OTP'), config('settings.VALIDATION_TYPE_IDS.EMAIL'), $user);
+        }
 
         if (!$token = Auth::attempt($credentials)) {
             return response()->json(['code' => 0, 'message' => 'Unauthorized'], 401);
