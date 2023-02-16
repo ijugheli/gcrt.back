@@ -18,6 +18,9 @@ class AttrValue extends Model
     protected $fillable = [
         'property_id',
         'p_value_id',
+        'owner_id',
+        'created_by',
+        'edited_by',
         'value_id',
         'related_value_id',
         'attr_id',
@@ -49,9 +52,9 @@ class AttrValue extends Model
     public function childrenCount()
     {
         return (DB::select(
-            'SELECT COUNT(0) as count 
-                           FROM (SELECT 0 
-                                  FROM `attr_values` 
+            'SELECT COUNT(0) as count
+                           FROM (SELECT 0
+                                  FROM `attr_values`
                                  WHERE attr_id = ? AND p_value_id = ?) a',
             [$this->attr_id, $this->value_id]
         ))[0]->count;
@@ -70,7 +73,7 @@ class AttrValue extends Model
             'children' => []
         ];
 
-        if($appendLeaf) {
+        if ($appendLeaf) {
             $node['childrenCount'] = $this->childrenCount();
             $node['leaf'] = $node['childrenCount'] <= 0;
         }

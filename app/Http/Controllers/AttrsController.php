@@ -101,6 +101,8 @@ class AttrsController extends Controller
 
             $propertyValue['value_id'] = $valueID;
             $propertyValue['attr_id'] = $attrID;
+            // Assign userID
+            $propertyValue['created_by'] = $propertyValue['owner_id'] = auth()->user()->id;
 
             if (!is_null($propertyValue['value_date'])) {
                 $propertyValue['value_date'] = (new DateTime($propertyValue['value_date']))->format('Y-m-d h:m:s');
@@ -147,13 +149,19 @@ class AttrsController extends Controller
             }
 
             $value->update([$value['valueName'] => $newValue[$value['valueName']]]);
+
+            // Check if value was updated and then assign userID
+            if ($value->wasChanged($value['valueName'])) {
+                $value->edited_by = auth()->user()->id;
+            }
+
             $value->save();
         }
 
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'record' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
+            'record' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get(),
         ]);
     }
 
