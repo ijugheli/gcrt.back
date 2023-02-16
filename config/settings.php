@@ -44,9 +44,10 @@ $ATTR_TYPES = [
 ];
 
 $PERMISSION_TYPES = [
-    1 => 'update',
-    2 => 'delete',
-    3 => 'structure',
+    1 => 'can_view',
+    2 => 'can_update',
+    3 => 'can_delete',
+    4 => 'can_edit_structure',
 ];
 
 return [

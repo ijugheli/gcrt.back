@@ -10,12 +10,13 @@ class UserPermission extends Model
 {
     protected $table = "user_permissions";
 
-    protected $fillable = ['id', 'user_id', 'attr_id', 'update', 'delete', 'structure'];
+    protected $fillable = ['id', 'user_id', 'attr_id', 'can_view', 'can_update', 'can_delete', 'can_edit_structure'];
 
     protected $casts = [
-        'update' => 'boolean',
-        'delete' => 'boolean',
-        'structure' => 'boolean'
+        'can_view' => 'boolean',
+        'can_update' => 'boolean',
+        'can_delete' => 'boolean',
+        'can_edit_structure' => 'boolean'
     ];
 
     public $timestamps = false;

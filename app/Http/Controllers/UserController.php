@@ -271,7 +271,7 @@ class UserController extends Controller
         $permissions = [];
 
         foreach ($attrIDS as $attrID) {
-            $permissions[] =  ['user_id' => $userID, 'attr_id' => $attrID, 'update' => false, 'delete' => false, 'structure' => false];
+            $permissions[] =  ['user_id' => $userID, 'attr_id' => $attrID, 'can_view' => false, 'can_update' => false, 'can_delete' => false, 'can_edit_structure' => false];
         }
 
         return UserPermission::insert($permissions);
