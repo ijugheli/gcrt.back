@@ -25,7 +25,7 @@ class AttrsController extends Controller
             $attrs[$key]['options'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
         }
 
-        return response()->json($attrs);
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $attrs]);
     }
 
     public function records()
