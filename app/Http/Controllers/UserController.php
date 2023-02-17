@@ -12,15 +12,13 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-
-    public function __construct()
-    {
-        // $this->middleware('auth:api');
-    }
-
     public function list()
     {
-        return response()->json(User::with('permissions')->get());
+        return response()->json([
+            'code' => 1,
+            'message' => 'success',
+            'data' => User::with('permissions')->get()
+        ]);
     }
 
     public function details(Request $request)
