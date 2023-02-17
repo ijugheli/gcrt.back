@@ -25,9 +25,7 @@ class PropertyController extends Controller
             'order_id',
         ]);
 
-        $lastPropertyOrderID = AttrProperty::where('attr_id', $data['attr_id'])->where('type', 1)->max('order_id') + 1;
-
-        $data['order_id'] = $lastPropertyOrderID;
+        $data['order_id'] = AttrProperty::where('attr_id', $data['attr_id'])->where('type', 1)->max('order_id') + 1;
 
         $validator = Validator::make($data, [
             'p_id' => 'required',
@@ -42,8 +40,6 @@ class PropertyController extends Controller
             'input_view_type' => 'required',
             'is_mandatory' => 'required',
         ]);
-
-
 
         if ($validator->fails()) {
             return $validator->errors();
@@ -96,6 +92,7 @@ class PropertyController extends Controller
         if (!$property) {
             return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
+
         return response()->json(['code' => 1, 'message' => 'სექცია წარმატებით დაემატა']);
     }
 
