@@ -271,7 +271,7 @@ class AttrsController extends Controller
 
         $attribute = $this->withRows($attribute);
 
-        return $attribute;
+        return response()->json(['code' => 1, 'message' => 'success','data' => $attribute]);
     }
 
     /**
@@ -325,7 +325,7 @@ class AttrsController extends Controller
         $attribute = $this->withSources($attribute);
         $attribute = $this->withRows($attribute);
 
-        return $attribute;
+        return response()->json(['code' => 1, 'message' => 'success','data' => $attribute]);
     }
 
 
@@ -598,6 +598,7 @@ class AttrsController extends Controller
         if ($attribute->isTree) {
             AttrValue::where('attr_id', $attrID)->whereIn('p_value_id', $valueIDs)->delete();
         }
+        return response()->json(['code' => 1, 'data' => 'ოპერაცია წარმატებით დასრულდა']);
     }
 
     public function setTitle(Request $request)

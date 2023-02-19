@@ -93,7 +93,7 @@ class UserController extends Controller
             'address',
             'phone',
         ]);
-        $user = User::where('id', $userID)->first();
+    $user = User::where('id', $userID)->first();
 
         if (is_null($user)) {
             return response()->json([
@@ -112,8 +112,7 @@ class UserController extends Controller
         if ($user->update($data)) {
             return response()->json([
                 'code' => 1,
-                'message' => 'სისტემის მომხმარებლის ' . $user->email . '-ის რედაქტირება წარმატებით დასრულდა',
-                'data' => $user
+                'message' => 'სისტემის მომხმარებლის ' . $user->email . '-ის რედაქტირება წარმატებით დასრულდა'
             ]);
         }
 
