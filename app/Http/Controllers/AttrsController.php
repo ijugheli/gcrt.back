@@ -119,7 +119,7 @@ class AttrsController extends Controller
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'record' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
+            'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
         ]);
     }
 
@@ -161,7 +161,7 @@ class AttrsController extends Controller
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'record' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get(),
+            'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get(),
         ]);
     }
 

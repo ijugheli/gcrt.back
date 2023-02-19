@@ -46,7 +46,7 @@ class Authenticate extends RefreshToken
             ) {
                 return response()->json(['code' => 0, 'message' => 'Token is invalid or blacklisted'], 401);
             } else if ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException) {
-                $this->handleExpiredToken($request, $next($request));
+                return  $this->handleExpiredToken($request, $next($request));
             } else if ($e instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException && $e->getMessage() == 'Token has expired') {
                 return $this->handleExpiredToken($request, $next($request));
             }
@@ -65,7 +65,6 @@ class Authenticate extends RefreshToken
 
         $data = json_decode($response->content(), true);
         $data['refresh_token'] = $refreshToken;
-
 
         return $response->setContent(json_encode($data));
     }
