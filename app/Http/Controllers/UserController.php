@@ -66,6 +66,7 @@ class UserController extends Controller
         }
 
         $data['password'] = Hash::make($data['password']);
+        $data['otp_enabled'] = true;
         $user = User::create($data);
         $createPermissions = $this->createPermissions($user->id);
 
@@ -79,7 +80,6 @@ class UserController extends Controller
         return response()->json([
             'code' => 1,
             'message' => 'სისტემის მომხმარებელი ' . $user->email . ' წარმატებით დაემატა',
-            'data' => $user
         ]);
     }
 
