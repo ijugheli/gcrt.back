@@ -241,7 +241,7 @@ class AttrsController extends Controller
         $attribute['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attribute->id)->get();
         $attribute['tree'] = $this->asNodes($attribute['values']);
 
-        return $attribute;
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $attribute]);
     }
     /**
      * Endpoint for table
@@ -266,12 +266,12 @@ class AttrsController extends Controller
 
         if ($attribute->isTree) {
             $attribute['tree'] = $this->asValueTree($attribute->values);
-            return $attribute;
+            return response()->json(['code' => 1, 'message' => 'success', 'data' => $attribute]);
         }
 
         $attribute = $this->withRows($attribute);
 
-        return response()->json(['code' => 1, 'message' => 'success','data' => $attribute]);
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $attribute]);
     }
 
     /**
@@ -325,7 +325,7 @@ class AttrsController extends Controller
         $attribute = $this->withSources($attribute);
         $attribute = $this->withRows($attribute);
 
-        return response()->json(['code' => 1, 'message' => 'success','data' => $attribute]);
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $attribute]);
     }
 
 
