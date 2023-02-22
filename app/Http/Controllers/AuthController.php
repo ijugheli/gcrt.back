@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Services\CodeSenderService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Http\Request;
 use App\Models\UserValidationCode;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Services\CodeSenderService;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -14,7 +15,7 @@ class AuthController extends Controller
 
     public function __construct(CodeSenderService $codeSenderService)
     {
-        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'logout', 'validateCode', 'sendCode']]);
+        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'logout', 'validateCode', 'sendCode', 'recoverPassword']]);
         $this->codeSenderService = $codeSenderService;
     }
 
@@ -67,9 +68,27 @@ class AuthController extends Controller
     }
 
 
-    public function sendCode(int $actionType, int $validationType, ?User $user)
+    public function recoverPassword()
     {
-        $user = $user ?? User::where('email', request()->email)->first();
+        $data = request()->only(['actionType', 'validationType', 'email']);
+
+        $validator = Validator::make($data, [
+            'actionType' => 'required|integer',
+            'validationType' => 'required|integer',
+            'email' => 'required',
+        ]);
+
+        if ($validator->fails() || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            return response()->json(['code' => 0, 'message' => 'შეიყვანეთ ელ-ფოსტა სწორი ფორმატით', 'errors' => $validator->errors()]);
+        }
+
+        return $this->sendCode($data['actionType'], $data['validationType'], $data['email']);
+    }
+
+    // $user is User model or Users email
+    public function sendCode(int $actionType, int $validationType, $user)
+    {
+        $user = $user instanceof \Illuminate\Database\Eloquent\Model ? $user : User::where('email', $user)->first();
 
         if (is_null($user)) {
             return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
@@ -98,6 +117,7 @@ class AuthController extends Controller
         }
 
         $validationCode->delete();
+
 
         return response()->json(['code' => 1, 'message' => 'Success']);
     }
