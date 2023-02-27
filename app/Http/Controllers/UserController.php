@@ -21,6 +21,16 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function me()
+    {
+        return response()->json(auth()->user());
+    }
+
     public function details(Request $request)
     {
         $userID = intval($request->route('user_id'));
@@ -32,7 +42,6 @@ class UserController extends Controller
 
         return response()->json($user);
     }
-
 
     public function add(Request $request)
     {
@@ -65,17 +74,10 @@ class UserController extends Controller
             ], 400);
         }
 
-        $data['password'] = Hash::make($data['password']);
+        $data['password'] = Hash::make($data    ['password']);
         $data['otp_enabled'] = true;
         $user = User::create($data);
         $createPermissions = $this->createPermissions($user->id);
-
-        if (!$createPermissions) {
-            return response()->json([
-                'code' => 0,
-                'message' => 'მომხმარებლის უფლებების შენახვისას დაფიქსირდა შეცდომა'
-            ], 400);
-        }
 
         return response()->json([
             'code' => 1,
@@ -93,7 +95,7 @@ class UserController extends Controller
             'address',
             'phone',
         ]);
-    $user = User::where('id', $userID)->first();
+        $user = User::where('id', $userID)->first();
 
         if (is_null($user)) {
             return response()->json([
@@ -233,7 +235,7 @@ class UserController extends Controller
     }
 
 
-    public function updateBooleanColumns(Request $request)
+    public function updateBooleanProperties(Request $request)
     {
         $userID = intval($request->route('user_id'));
         $statusID = (bool) intval($request->status_id);
@@ -249,7 +251,7 @@ class UserController extends Controller
     }
 
     // ATTR PERMISSIONS
-    public function savePermission(Request $request)
+    public function updatePermission(Request $request)
     {
         $userID = intval($request->route('user_id'));
         $attrID = intval($request->route('attr_id'));

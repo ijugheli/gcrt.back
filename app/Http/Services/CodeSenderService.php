@@ -29,7 +29,7 @@ class CodeSenderService
         $time = Carbon::now();
         $model = new UserValidationCode;
         $model->user_id = $user->id;
-        $model->code = $actionType == config('settings.ACTION_TYPE_IDS.RECOVER_PASSWORD') ? sha1(time()) : intval(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
+        $model->code = $actionType == config('constants.actionTypeIDS.recover_password') ? sha1(time()) : intval(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
         $model->action_type = $actionType;
         $model->validation_type = $validationType;
         $model->created_at = $time;

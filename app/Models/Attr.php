@@ -59,4 +59,8 @@ class Attr extends Model
     {
         return $this->type == config('settings')['ATTR_TYPES']['entity'];
     }
+
+    public function remove() {
+        return $this->update(['status_id' => -1]);
+    }
 }

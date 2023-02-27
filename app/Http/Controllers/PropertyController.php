@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attr;
+use App\Models\AttrValue;
+use App\Http\Helpers\Helper;
 use App\Models\AttrProperty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -51,6 +54,8 @@ class PropertyController extends Controller
             return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
 
+        Helper::saveUserAction(config('constants.userActionTypesIDS.addProperty'), $property->attr_id, $property->id);
+
         if ($property->is_primary) {
             AttrProperty::where('id', '!=', $property->id)->where('p_id', $property->p_id)->where('attr_id', $property->attr_id)->update(['is_primary' => 0]);
         }
@@ -93,15 +98,28 @@ class PropertyController extends Controller
             return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
 
+        Helper::saveUserAction(config('constants.userActionTypesIDS.addProperty'), $property->attr_id, $property->id);
+
         return response()->json(['code' => 1, 'message' => 'სექცია წარმატებით დაემატა']);
     }
 
     public function removeProperty(Request $request)
     {
-        $attrID = intval(request()->attr_id);
-
-        $propertyID = $request['property_id'];
+        $propertyID  = intval($request->route('property_id'));
         $property = AttrProperty::where('id', $propertyID)->first();
+        $propertyIDS = [];
+
+        if ($property->isSection()) {
+            $propertyIDS = AttrProperty::where('p_id', $propertyID)->pluck('id');
+            AttrValue::whereIn('property_id', $propertyIDS)->remove();
+            AttrProperty::where('p_id', $propertyID)->remove();
+        } else {
+            AttrValue::where('property_id')->remove();
+        }
+
+        Helper::saveUserAction(config('constants.userActionTypesIDS.removeProperty'), $property->attr_id, $property->id);
+
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
     }
 
     public function updateProperty(Request $request)
@@ -122,6 +140,8 @@ class PropertyController extends Controller
         if ($property->is_primary) {
             AttrProperty::where('id', '!=', $propertyID)->where('attr_id', $property->attr_id)->update(['is_primary' => 0]);
         }
+
+        Helper::saveUserAction(config('constants.userActionTypesIDS.editProperty'), $property->attr_id, $property->id);
 
         return response()->json([
             'code' => 1,

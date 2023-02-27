@@ -32,6 +32,8 @@ class AttrValue extends Model
         'value_boolean',
         'value_date',
         'value_json',
+        'status_id',
+
     ];
 
     protected $valueColumns = [
@@ -128,5 +130,10 @@ class AttrValue extends Model
         }
 
         return null;
+    }
+
+    public function remove()
+    {
+        return $this->update(['status_id' => -1]);
     }
 }

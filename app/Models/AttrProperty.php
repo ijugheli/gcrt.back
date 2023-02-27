@@ -21,6 +21,7 @@ class AttrProperty extends Model
         'attr_id',
         'type',
         'order_id',
+        'status_id',
     ];
     public function dataType()
     {
@@ -37,4 +38,12 @@ class AttrProperty extends Model
         return $this->hasOne(Attr::class, 'id', 'source_attr_id');
     }
 
+    public function isSection()
+    {
+        return  $this->type == 2;
+    }
+
+    public function remove() {
+        return $this->update(['status_id' => -1]);
+    }
 }

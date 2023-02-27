@@ -35,7 +35,6 @@ class AuthController extends Controller
 
         $credentials = $request->only(['email', 'password']);
 
-
         $user = User::where('email', $credentials['email'])->first();
 
         if (!$user) {
@@ -47,28 +46,13 @@ class AuthController extends Controller
         }
 
         if ($user->isOTPEnabled()) {
-            return $this->sendCode(config('settings.ACTION_TYPE_IDS.OTP'), config('settings.VALIDATION_TYPE_IDS.EMAIL'), $user);
+            return $this->sendCode(config('constants.actionTypeIDS.otp'), config('constants.validationTypeIDS.email'), $user);
         }
 
-        if (!$token = Auth::attempt($credentials)) {
-            return response()->json(['code' => 0, 'message' => 'Unauthorized'], 401);
-        }
-
-        return $this->respondWithToken($token);
+        return $this->respondWithToken(Auth::attempt($credentials));
     }
 
-    /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function me()
-    {
-        return response()->json(auth()->user());
-    }
-
-
-    public function recoverPassword()
+    public function sendRecoveryLink()
     {
         $data = request()->only(['actionType', 'validationType', 'email']);
 
@@ -111,7 +95,7 @@ class AuthController extends Controller
             return response()->json(['code' => 0, 'message' => 'ლინკი/კოდი არავალიდურია'], 400);
         }
 
-        if ($validationCode->action_type == config('settings.ACTION_TYPE_IDS.OTP')) {
+        if ($validationCode->action_type == config('constants.actionTypeIDS.otp')) {
             $validationCode->delete();
             return $this->respondWithToken(Auth::login($validationCode->user));
         }
@@ -131,7 +115,7 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['code' => 1, 'message' => 'Successfully logged out']);
     }
 
     /**

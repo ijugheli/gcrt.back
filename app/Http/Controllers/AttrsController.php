@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admins;
-use App\Models\Attr;
-use App\Models\AttrProperty;
-use App\Models\AttrValue;
-use Illuminate\Http\Request;
 use DateTime;
+use App\Models\Attr;
+use App\Models\AttrValue;
+use App\Http\Helpers\Helper;
+use App\Models\AttrProperty;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 
 class AttrsController extends Controller
 {
@@ -53,9 +52,6 @@ class AttrsController extends Controller
         ]);
     }
 
-
-
-
     public function addAttribute(Request $request)
     {
         $data = $request->only([
@@ -77,9 +73,12 @@ class AttrsController extends Controller
             return $validator->errors();
         }
 
-        if (!Attr::create($data)) {
+        if (!$attr = Attr::create($data)) {
             return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
+
+        Helper::saveUserAction(config('constants.userActionTypesIDS.addAttr'), $attr->id);
+
         return response()->json(['code' => 1, 'message' => 'ატრიბუტი წარმატებით დაემატა']);
     }
 
@@ -115,6 +114,8 @@ class AttrsController extends Controller
         }
 
         Attr::find($attrID)->values()->createMany($sanitizedValues);
+
+        Helper::saveUserAction(config('constants.userActionTypesIDS.addRecord'), null, null, $valueID);
 
         return response()->json([
             'code' => 1,
@@ -155,6 +156,8 @@ class AttrsController extends Controller
                 $value->edited_by = auth()->user()->id;
             }
 
+            Helper::saveUserAction(config('constants.userActionTypesIDS.editRecord'), null, null, $valueID);
+
             $value->save();
         }
 
@@ -180,6 +183,8 @@ class AttrsController extends Controller
 
         $attr->update($data);
 
+        Helper::saveUserAction(config('constants.userActionTypesIDS.editAttr'), $attrID);
+
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
@@ -187,8 +192,26 @@ class AttrsController extends Controller
         ]);
     }
 
+    public function removeAttribute(Request $request)
+    {
+        $attrID = $request->route('attr_id');
+        $attr = Attr::where('id', $attrID)->first();
 
+        if (!$attr) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'ატრიბუტი ვერ მოიძებნა'
+            ]);
+        }
 
+        Helper::saveUserAction(config('constants.userActionTypesIDS.deleteAttr'), $attrID);
+
+        AttrValue::where('attr_id', $attrID)->remove();
+        AttrProperty::where('attr_id', $attrID)->remove();
+        $attr->remove(['status_id' => -1]);
+
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
+    }
 
 
 
@@ -593,11 +616,14 @@ class AttrsController extends Controller
         $values = $request->all();
         $valueIDs = array_map('intval', $values);
 
-        AttrValue::where('attr_id', $attrID)->whereIn('value_id', $valueIDs)->delete();
+        AttrValue::where('attr_id', $attrID)->whereIn('value_id', $valueIDs)->remove();
 
         if ($attribute->isTree) {
-            AttrValue::where('attr_id', $attrID)->whereIn('p_value_id', $valueIDs)->delete();
+            AttrValue::where('attr_id', $attrID)->whereIn('p_value_id', $valueIDs)->remove();
         }
+
+        Helper::saveUserAction(config('constants.userActionTypesIDS.deleteRecord'), $attrID);
+
         return response()->json(['code' => 1, 'data' => 'ოპერაცია წარმატებით დასრულდა']);
     }
 
