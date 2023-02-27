@@ -28,8 +28,7 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
     $router->group(['prefix' => '/attrs'], function () use ($router) {
         $router->get('', 'AttrsController@list');
         $router->post('/add', 'AttrsController@addAttribute');
-        $router->post('/add-section', 'PropertyController@addSection');
-        $router->post('/add-section-property', 'PropertyController@addProperty');
+        $router->delete('/{attr_id:[0-9]+}', 'AttrsController@removeAttribute');
         $router->get('/static', 'AttrsController@attrs');
         $router->get('/{attr_id:[0-9]+}', 'AttrsController@properties');
         $router->get('/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
@@ -47,19 +46,24 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->post('/{attr_id:[0-9]+}/update', 'AttrsController@updateAttr');
 
         $router->post('/{attr_id:[0-9]+}/properties/reorder', 'PropertyController@reorderProperties');
+        $router->post('/properties/add-section', 'PropertyController@addSection');
+        $router->post('/properties/add-property', 'PropertyController@addProperty');
+        $router->delete('/properties/{property_id:[0-9]+}', 'PropertyController@removeProperty');
         $router->post('/properties/{property_id:[0-9]+}/update', 'PropertyController@updateProperty');
     });
+
 
     // User Management
     $router->group(['prefix' => '/user'], function () use ($router) {
         $router->get('/list', 'UserController@list');
+        $router->get('/profile', 'UserController@me');
         $router->get('/{user_id:[0-9]+}', 'UserController@details');
         $router->post('/add', 'UserController@add');
         $router->post('/edit/{user_id:[0-9]+}', 'UserController@edit');
         $router->post('/changePassword', 'UserController@changePassword');
         $router->delete('/{user_id:[0-9]+}', 'UserController@delete');
-        $router->post('/update-boolean-columns/{user_id:[0-9]+}', 'UserController@updateBooleanColumns');
-        $router->post('/permissions/add/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@savePermission');
+        $router->post('/update-boolean-properties/{user_id:[0-9]+}', 'UserController@updateBooleanColumns');
+        $router->post('/permissions/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@updatePermission');
     });
 });
 
@@ -68,12 +72,15 @@ $router->group(['prefix' => $backendPrefix . '/user'], function () use ($router)
     $router->post('/login', 'AuthController@login');
     $router->post('/logout', 'AuthController@logout');
     $router->post('/refresh', 'AuthController@refresh');
-    $router->get('/profile', 'AuthController@me');
-    $router->post('/send-recovery-link', 'AuthController@recoverPassword');
-    $router->post('/validate-recovery-link', 'AuthController@validateCode');
+    $router->post('/send-recovery-link', 'AuthController@sendRecoveryLink');
+    $router->post('/validate-code', 'AuthController@validateCode');
+    //USER
     $router->post('/update-password', 'UserController@updatePassword');
 });
 
+$router->post('/survey', 'SurveyController@create');
+$router->post('/survey/store', 'SurveyController@store');
+$router->get('/survey/{attr_id}', 'SurveyController@getSurvey');
 
 // $router->group(['prefix' => '$backendPrefix'], function () use ($router) {
 // });
