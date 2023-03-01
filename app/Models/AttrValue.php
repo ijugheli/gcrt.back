@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class AttrValue extends Model
 {
@@ -33,7 +34,6 @@ class AttrValue extends Model
         'value_date',
         'value_json',
         'status_id',
-
     ];
 
     protected $valueColumns = [
@@ -132,8 +132,8 @@ class AttrValue extends Model
         return null;
     }
 
-    public function remove()
-    {
-        return $this->update(['status_id' => -1]);
-    }
+    // public function scopeActive(Builder $query): void
+    // {
+    //     $query->where('status_id', 1);
+    // }
 }

@@ -58,6 +58,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany(UserPermission::class);
     }
 
+    public function actions()
+    {
+        return $this->hasMany(UserAction::class);
+    }
+
     static public function whereActive()
     {
         return self::where('status_id', 1);

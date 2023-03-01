@@ -86,9 +86,26 @@ $userActionTypes = [
     13 => 'deactivateOTP',
 ];
 
+$userActionTypeTitles = [
+    1 => 'ატრიბუტის დამატება',
+    2 => 'ატრიბუტის რედაქტირება',
+    3 => 'ატრიბუტის წაშლა',
+    4 => 'პარამეტრის დამატება',
+    5 => 'პარამეტრის რედაქტირება',
+    6 => 'პარამეტრის წაშლა',
+    7 => 'ჩანაწერის დამატება',
+    8 => 'ჩანაწერის რედაქტირება',
+    9 => 'ჩანაწერის წაშლა',
+    10 => 'სისტემაში შესვლა',
+    11 => 'სისტემიდან გასვლა',
+    12 => 'OTP ჩართვა',
+    13 => 'OTP გამორთვა',
+];
+
 
 return [
     'userActionTypes' => $userActionTypes,
+    'userActionTypeTitles' => $userActionTypeTitles,
     'userActionTypesIDS' => array_flip($userActionTypes),
     'actionTypes' => $actionTypes,
     'actionTypeIDS' => array_flip($actionTypes),

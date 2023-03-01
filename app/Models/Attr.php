@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 
 class Attr extends Model
 {
     protected $table = "attrs";
-
     protected $fillable = ['p_id', 'type', 'status_id', 'title', 'lazy'];
     protected $appends = ['count', 'isTree'];
     protected $casts = [
         'lazy' => 'boolean',
         'status_id' => 'boolean'
     ];
+
     public $timestamps = false;
 
     public function values()
@@ -60,7 +60,8 @@ class Attr extends Model
         return $this->type == config('settings')['ATTR_TYPES']['entity'];
     }
 
-    public function remove() {
-        return $this->update(['status_id' => -1]);
-    }
+    // public function scopeActive(Builder $query): void
+    // {
+    //     $query->where('status_id', 1);
+    // }
 }

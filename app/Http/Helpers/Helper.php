@@ -26,7 +26,7 @@ class Helper
     static public function saveUserAction(int $actionTypeID, int $attrID = null, int $propertyID = null, int $recordID = null): void
     {
         UserAction::create([
-            'user_id' => auth()->id(),
+            'user_id' => auth()->user()->id,
             'action_type_id' => $actionTypeID,
             'attr_id' => $attrID,
             'property_id' => $propertyID,

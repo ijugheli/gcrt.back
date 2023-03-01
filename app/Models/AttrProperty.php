@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class AttrProperty extends Model
 {
@@ -40,10 +41,11 @@ class AttrProperty extends Model
 
     public function isSection()
     {
-        return  $this->type == 2;
+        return $this->type == 2;
     }
 
-    public function remove() {
-        return $this->update(['status_id' => -1]);
-    }
+    // public function scopeActive(Builder $query): void
+    // {
+    //     $query->where('status_id', 1);
+    // }
 }

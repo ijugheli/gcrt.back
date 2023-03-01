@@ -195,7 +195,7 @@ class AttrsController extends Controller
     public function removeAttribute(Request $request)
     {
         $attrID = $request->route('attr_id');
-        $attr = Attr::where('id', $attrID)->first();
+        $attr = Attr::find('id', $attrID);
 
         if (!$attr) {
             return response()->json([
@@ -206,9 +206,9 @@ class AttrsController extends Controller
 
         Helper::saveUserAction(config('constants.userActionTypesIDS.deleteAttr'), $attrID);
 
-        AttrValue::where('attr_id', $attrID)->remove();
-        AttrProperty::where('attr_id', $attrID)->remove();
-        $attr->remove(['status_id' => -1]);
+        AttrValue::where('attr_id', $attrID)->update(['status_id' => -1]);
+        AttrProperty::where('attr_id', $attrID)->update(['status_id' => -1]);
+        $attr->update(['status_id' => -1]);
 
         return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
     }
@@ -609,6 +609,23 @@ class AttrsController extends Controller
         return response()->json(['ოპერაციის შესრულების დროს მოხდა შეცდომა'], 500);
     }
 
+
+    public function test()
+    {
+        $ids = Attr::pluck('id');
+        $valueIDS = AttrValue::pluck('id');
+        $propIDS = AttrProperty::pluck('id');
+
+        $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
+        $value = AttrValue::get()->update(['status_id' => 1]);
+        $property = AttrProperty::get()->update(['status_id' => 1]);
+
+        return [
+            'attr' => $attr,
+            'values' => $value,
+            'property' => $property
+        ];
+    }
     public function remove(Request $request)
     {
         $attrID = intval(request()->attr_id);
@@ -616,10 +633,10 @@ class AttrsController extends Controller
         $values = $request->all();
         $valueIDs = array_map('intval', $values);
 
-        AttrValue::where('attr_id', $attrID)->whereIn('value_id', $valueIDs)->remove();
+        AttrValue::where('attr_id', $attrID)->whereIn('value_id', $valueIDs)->update(['status_id' => -1]);
 
         if ($attribute->isTree) {
-            AttrValue::where('attr_id', $attrID)->whereIn('p_value_id', $valueIDs)->remove();
+            AttrValue::where('attr_id', $attrID)->whereIn('p_value_id', $valueIDs)->update(['status_id' => -1]);
         }
 
         Helper::saveUserAction(config('constants.userActionTypesIDS.deleteRecord'), $attrID);

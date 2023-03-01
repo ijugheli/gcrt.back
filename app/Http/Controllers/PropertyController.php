@@ -106,18 +106,20 @@ class PropertyController extends Controller
     public function removeProperty(Request $request)
     {
         $propertyID  = intval($request->route('property_id'));
-        $property = AttrProperty::where('id', $propertyID)->first();
+        $property = AttrProperty::find($propertyID)();
         $propertyIDS = [];
+
+        $property->update(['status_id' => -1]);
 
         if ($property->isSection()) {
             $propertyIDS = AttrProperty::where('p_id', $propertyID)->pluck('id');
-            AttrValue::whereIn('property_id', $propertyIDS)->remove();
-            AttrProperty::where('p_id', $propertyID)->remove();
+            AttrValue::whereIn('property_id', $propertyIDS)->update(['status_id' => -1]);
+            AttrProperty::where('p_id', $propertyID)->update(['status_id' => -1]);
         } else {
-            AttrValue::where('property_id')->remove();
+            AttrValue::where('property_id', $propertyID)->update(['status_id' => -1]);
         }
 
-        Helper::saveUserAction(config('constants.userActionTypesIDS.removeProperty'), $property->attr_id, $property->id);
+        Helper::saveUserAction(config('constants.userActionTypesIDS.deleteProperty'), $property->attr_id, $property->id);
 
         return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
     }

@@ -37,6 +37,6 @@ class UserAction extends Model
 
     public function property()
     {
-        return $this->belongsTo(AttrProperty::class, 'id', 'property_id');
+        return $this->belongsTo(AttrProperty::class);
     }
 }

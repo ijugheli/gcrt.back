@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attr;
 use  App\Models\User;
+use App\Models\UserAction;
 use Illuminate\Http\Request;
 use App\Models\UserPermission;
 use Illuminate\Support\Facades\Auth;
@@ -34,13 +35,25 @@ class UserController extends Controller
     public function details(Request $request)
     {
         $userID = intval($request->route('user_id'));
-        $user = User::where('id', $userID)->with(['permissions'])->first();
 
-        if (is_null($user)) {
-            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა']);
-        }
+        $user = User::whereKey($userID)->with(['permissions'])->firstOr(function () {
+            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 404);
+        });
 
-        return response()->json($user);
+        return $user;
+    }
+
+    public function getReports()
+    {
+        $users  = User::with(['actions' => function ($query) {
+            $query->with([
+                'record', 'property', 'attr'
+            ]);
+        }])->get();
+
+        $map = $users->map(function ($item, $key) {
+        });
+        return $users;
     }
 
     public function add(Request $request)
@@ -74,7 +87,7 @@ class UserController extends Controller
             ], 400);
         }
 
-        $data['password'] = Hash::make($data    ['password']);
+        $data['password'] = Hash::make($data['password']);
         $data['otp_enabled'] = true;
         $user = User::create($data);
         $createPermissions = $this->createPermissions($user->id);
@@ -95,13 +108,13 @@ class UserController extends Controller
             'address',
             'phone',
         ]);
-        $user = User::where('id', $userID)->first();
+        $user = User::find($userID);
 
         if (is_null($user)) {
             return response()->json([
                 'code' => 0,
-                'message' => 'მომხმარებელი ვერ მოიძებნა',
-            ]);
+                'message' => 'მომხმარებელი ვერ მოიძებნა'
+            ], 400);
         }
 
         if (count($data) <= 0) {
@@ -118,10 +131,7 @@ class UserController extends Controller
             ]);
         }
 
-        return response()->json([
-            'code' => 0,
-            'message' => 'ოპერაციის შესრულებისას მოხდა შეცდომა',
-        ]);;
+        return $user;
     }
 
     public function changePassword(Request $request)
@@ -132,8 +142,7 @@ class UserController extends Controller
             'confirmPassword',
         ]);
 
-        $userID = Auth::id();
-        $user = User::where('id', $userID)->first();
+        $user = User::find(auth()->id());
 
         if (is_null($user)) {
             return response()->json([
@@ -196,8 +205,6 @@ class UserController extends Controller
 
         $user = User::where('email', $data['email'])->first();
 
-
-
         if (is_null($user)) {
             return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
         }
@@ -223,7 +230,7 @@ class UserController extends Controller
         $user = User::find($userID);
         $userPermissions = UserPermission::where('user_id', $userID);
 
-        if ($user === null) {
+        if (is_null($user)) {
             return response()->json(['მომხმარებელი ვერ მოიძებნა'], 400);
         }
 
@@ -243,7 +250,9 @@ class UserController extends Controller
 
         $user = User::find($userID);
 
-        if (is_null($user)) return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
+        if (is_null($user)) {
+            return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
+        }
 
         $user->update(['status_id' => $statusID, 'otp_enabled' => $otpEnabled]);
 
@@ -256,11 +265,27 @@ class UserController extends Controller
         $userID = intval($request->route('user_id'));
         $attrID = intval($request->route('attr_id'));
         $permissionType = config('settings.PERMISSION_TYPES')[intval($request->permission_type)];
-        $permissionValue = (bool) $request->permission_value;
+        $permissionValue = $request->permission_value;
 
-        $values = ['user_id' => $userID, 'attr_id' => $attrID];
+        $values = [
+            'user_id' => $userID,
+            'attr_id' => $attrID,
+        ];
+
         $userPermission  = UserPermission::where($values)->first();
+        $values = [
+            ...$values,
+            'can_view' => 0,
+            'can_update' => 0,
+            'can_delete' => 0,
+            'can_edit_structure' => 0
+        ];
+
         $values[$permissionType] =  $permissionValue; // append permission type ID+ new value
+
+        if (!$values['can_view']) {
+            $values['can_update'] = $values['can_delete'] = 0;
+        }
 
         if (is_null($userPermission)) {
             $userPermission = UserPermission::create($values);

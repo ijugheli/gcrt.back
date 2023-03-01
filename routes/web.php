@@ -82,5 +82,8 @@ $router->post('/survey', 'SurveyController@create');
 $router->post('/survey/store', 'SurveyController@store');
 $router->get('/survey/{attr_id}', 'SurveyController@getSurvey');
 
+
+$router->get('test', 'AttrsController@test');
+$router->get('user/report', 'UserController@getReports');
 // $router->group(['prefix' => '$backendPrefix'], function () use ($router) {
 // });

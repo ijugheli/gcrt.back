@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserAction;
+use App\Http\Helpers\Helper;
 use Illuminate\Http\Request;
 use App\Models\UserValidationCode;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +51,8 @@ class AuthController extends Controller
             return $this->sendCode(config('constants.actionTypeIDS.otp'), config('constants.validationTypeIDS.email'), $user);
         }
 
+        Helper::saveUserAction(config('constants.userActionTypesIDS.login'));
+
         return $this->respondWithToken(Auth::attempt($credentials));
     }
 
@@ -70,9 +74,9 @@ class AuthController extends Controller
     }
 
     // $user is User model or Users email
-    public function sendCode(int $actionType, int $validationType, $user)
+    public function sendCode(int $actionType, int $validationType, $data)
     {
-        $user = $user instanceof \Illuminate\Database\Eloquent\Model ? $user : User::where('email', $user)->first();
+        $user = $data instanceof \Illuminate\Database\Eloquent\Model ? $data : User::where('email', $data)->first();
 
         if (is_null($user)) {
             return response()->json(['code' => 0, 'message' => 'მომხმარებელი ვერ მოიძებნა'], 400);
@@ -97,6 +101,7 @@ class AuthController extends Controller
 
         if ($validationCode->action_type == config('constants.actionTypeIDS.otp')) {
             $validationCode->delete();
+            Helper::saveUserAction(config('constants.userActionTypesIDS.login'));
             return $this->respondWithToken(Auth::login($validationCode->user));
         }
 
@@ -114,7 +119,7 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->logout();
-
+        Helper::saveUserAction(config('constants.userActionTypesIDS.logout'));
         return response()->json(['code' => 1, 'message' => 'Successfully logged out']);
     }
 
