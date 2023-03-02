@@ -17,7 +17,7 @@ class UserAction extends Model
 
     public function userActionType()
     {
-        return $this->belongsTo(UserActionType::class);
+        return $this->hasOne(UserActionType::class, 'id', 'action_type_id');
     }
 
     public function user()

@@ -11,7 +11,7 @@ class UserValidationCode extends Model
 
     protected $fillable = ['id', 'user_id', 'code', 'action_type', 'validation_type', 'created_at', 'expires_at'];
 
-    protected $casts = [];
+    protected $casts = ['expires_at' => 'datetime'];
     public $timestamps = false;
 
     public function user(): BelongsTo

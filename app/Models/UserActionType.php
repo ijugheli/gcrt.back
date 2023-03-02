@@ -9,5 +9,6 @@ class UserActionType extends Model
     protected $fillable = [
         'id',
         'type',
+        'title'
     ];
 }

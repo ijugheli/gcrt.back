@@ -106,7 +106,7 @@ class PropertyController extends Controller
     public function removeProperty(Request $request)
     {
         $propertyID  = intval($request->route('property_id'));
-        $property = AttrProperty::find($propertyID)();
+        $property = AttrProperty::find($propertyID);
         $propertyIDS = [];
 
         $property->update(['status_id' => -1]);

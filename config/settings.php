@@ -1,7 +1,7 @@
 <?php
 
 
-$CODE_EXPIRY_TIME = 60 * 6; // seconds
+$CODE_EXPIRY_TIME = 60 * 5; // seconds
 
 $VIEW_TYPES = [
     1 => 'input',

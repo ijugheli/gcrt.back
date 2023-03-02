@@ -51,7 +51,7 @@ class AuthController extends Controller
             return $this->sendCode(config('constants.actionTypeIDS.otp'), config('constants.validationTypeIDS.email'), $user);
         }
 
-        Helper::saveUserAction(config('constants.userActionTypesIDS.login'));
+        Helper::saveUserAction(config('constants.userActionTypesIDS.login'), null, null, null, $user->id);
 
         return $this->respondWithToken(Auth::attempt($credentials));
     }
@@ -90,23 +90,21 @@ class AuthController extends Controller
         return response()->json(['code' => 1, 'message' => 'ლინკი/კოდი წარმატებით გამოიგზავნა თქვენს ელ-ფოსტაზე']);
     }
 
-    public function validateCode()
+    public function validateCode(Request $request)
     {
-        $code = request()->code;
-        $validationCode = UserValidationCode::where('code', $code)->with('user')->first();
+        $validationCode = UserValidationCode::where('code', $request->code)->with('user')->first();
 
-        if (is_null($validationCode)) {
+        if (is_null($validationCode) || $validationCode->expires_at->isPast()) {
             return response()->json(['code' => 0, 'message' => 'ლინკი/კოდი არავალიდურია'], 400);
         }
 
         if ($validationCode->action_type == config('constants.actionTypeIDS.otp')) {
             $validationCode->delete();
-            Helper::saveUserAction(config('constants.userActionTypesIDS.login'));
+            Helper::saveUserAction(config('constants.userActionTypesIDS.login'), null, null, null, $validationCode->user->id);
             return $this->respondWithToken(Auth::login($validationCode->user));
         }
 
         $validationCode->delete();
-
 
         return response()->json(['code' => 1, 'message' => 'Success']);
     }

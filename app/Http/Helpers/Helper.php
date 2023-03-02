@@ -23,10 +23,10 @@ class Helper
         return implode($string);
     }
 
-    static public function saveUserAction(int $actionTypeID, int $attrID = null, int $propertyID = null, int $recordID = null): void
+    static public function saveUserAction(int $actionTypeID, int $attrID = null, int $propertyID = null, int $recordID = null, int $userID = null): void
     {
         UserAction::create([
-            'user_id' => auth()->user()->id,
+            'user_id' => $userID ?? auth()->user()->id,
             'action_type_id' => $actionTypeID,
             'attr_id' => $attrID,
             'property_id' => $propertyID,

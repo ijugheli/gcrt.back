@@ -8,6 +8,7 @@ use App\Models\AttrValue;
 use App\Http\Helpers\Helper;
 use App\Models\AttrProperty;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class AttrsController extends Controller
@@ -156,7 +157,7 @@ class AttrsController extends Controller
                 $value->edited_by = auth()->user()->id;
             }
 
-            Helper::saveUserAction(config('constants.userActionTypesIDS.editRecord'), null, null, $valueID);
+            Helper::saveUserAction(config('constants.userActionTypesIDS.editRecord'), $attrID, null, $valueID);
 
             $value->save();
         }
@@ -612,19 +613,19 @@ class AttrsController extends Controller
 
     public function test()
     {
-        $ids = Attr::pluck('id');
-        $valueIDS = AttrValue::pluck('id');
-        $propIDS = AttrProperty::pluck('id');
+        // $ids = Attr::pluck('id');
+        // $valueIDS = AttrValue::pluck('id');
+        // $propIDS = AttrProperty::pluck('id');
 
-        $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
-        $value = AttrValue::get()->update(['status_id' => 1]);
-        $property = AttrProperty::get()->update(['status_id' => 1]);
+        // $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
+        // $value = AttrValue::get()->update(['status_id' => 1]);
+        // $property = AttrProperty::get()->update(['status_id' => 1]);
 
-        return [
-            'attr' => $attr,
-            'values' => $value,
-            'property' => $property
-        ];
+        // return [
+        //     'attr' => $attr,
+        //     'values' => $value,
+        //     'property' => $property
+        // ];
     }
     public function remove(Request $request)
     {

@@ -54,7 +54,7 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
 
 
     // User Management
-    $router->group(['prefix' => '/user'], function () use ($router) {
+    $router->group(['prefix' => '/users'], function () use ($router) {
         $router->get('/list', 'UserController@list');
         $router->get('/profile', 'UserController@me');
         $router->get('/{user_id:[0-9]+}', 'UserController@details');
@@ -62,7 +62,7 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->post('/edit/{user_id:[0-9]+}', 'UserController@edit');
         $router->post('/changePassword', 'UserController@changePassword');
         $router->delete('/{user_id:[0-9]+}', 'UserController@delete');
-        $router->post('/update-boolean-properties/{user_id:[0-9]+}', 'UserController@updateBooleanColumns');
+        $router->post('/update-boolean-properties/{user_id:[0-9]+}', 'UserController@updateBooleanProperties');
         $router->post('/permissions/{user_id:[0-9]+}/{attr_id:[0-9]+}', 'UserController@updatePermission');
     });
 });

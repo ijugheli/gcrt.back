@@ -45,15 +45,24 @@ class UserController extends Controller
 
     public function getReports()
     {
-        $users  = User::with(['actions' => function ($query) {
-            $query->with([
-                'record', 'property', 'attr'
-            ]);
-        }])->get();
+        $users  = UserAction::where('user_id', 8)->with(['attr' => function ($query) {
+            $query->select('id', 'title');
+        }, 'property'  => function ($query) {
+            $query->select('id', 'title');
+        }, 'record', 'userActionType'])->get();
 
-        $map = $users->map(function ($item, $key) {
+        $data = $users->map(function ($item, $key) {
+            $temp = [];
+            $temp['id'] = $key;
+            $temp['title'] = $item?->userActionType->title;
+            $temp['attrTitle'] = $item->attr?->title ?? '';
+            $temp['propertyTitle'] = $item->property?->title ?? '';
+            $temp['createdAt'] = $item->created_at;
+            // $temp['recordTitle'] = $item?->attr?->title;
+            return $temp;
         });
-        return $users;
+
+        return response()->json($data);
     }
 
     public function add(Request $request)
