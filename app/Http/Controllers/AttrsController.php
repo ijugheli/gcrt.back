@@ -456,7 +456,7 @@ class AttrsController extends Controller
         foreach ($attribute->properties as $key => $property) {
             $sourceID = $property->source_attr_id;
 
-            if (is_null($sourceID)) {
+            if (is_null($sourceID) || !$sourceID) {
                 continue;
             }
 

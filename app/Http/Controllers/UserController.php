@@ -287,7 +287,7 @@ class UserController extends Controller
             'can_view' => 0,
             'can_update' => 0,
             'can_delete' => 0,
-            'can_edit_structure' => 0
+            'can_edit_structure' => 0,
         ];
 
         $values[$permissionType] =  $permissionValue; // append permission type ID+ new value
@@ -302,13 +302,6 @@ class UserController extends Controller
             $userPermission->update($values);
         };
 
-        if (is_null($userPermission)) {
-            return response()->json([
-                'code' => 0,
-                'message' => 'მომხმარებლის უფლებების ცვლილებისას დაფიქსირდა შეცდომა',
-            ]);
-        };
-
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
@@ -318,11 +311,18 @@ class UserController extends Controller
 
     private function createPermissions(int $userID): bool
     {
-        $attrIDS = Attr::select('id')->get()->pluck('id');
+        $attrIDS = Attr::pluck('id');
         $permissions = [];
 
         foreach ($attrIDS as $attrID) {
-            $permissions[] =  ['user_id' => $userID, 'attr_id' => $attrID, 'can_view' => false, 'can_update' => false, 'can_delete' => false, 'can_edit_structure' => false];
+            $permissions[] =  [
+                'user_id' => $userID,
+                'attr_id' => $attrID,
+                'can_view' => 0,
+                'can_update' => 0,
+                'can_delete' => 0,
+                'can_edit_structure' => 0
+            ];
         }
 
         return UserPermission::insert($permissions);

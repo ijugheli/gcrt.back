@@ -30,7 +30,7 @@ class SurveyController extends Controller
         $survey = Survey::create(['attr_id' => $data['attrID'], 'title' => $data['title']]);
         $surveyDefinitions = $this->createSurveyDefinitions($data['definitions'], $survey->id);
 
-        foreach ($surveyDefinitions as $key => $surveyDefinition) {
+        foreach ($surveyDefinitions as $surveyDefinition) {
             $definition = $surveyDefinition['definition'];
             $questions = $surveyDefinition['questions'];
             $choices = $surveyDefinition['choices'];
@@ -74,7 +74,7 @@ class SurveyController extends Controller
         $questions = SurveyDefinitionValue::select(['id', 'survey_definition_id', 'key'])->where('survey_definition_id', $definitionID)->where('type', $questionTypeID)->get();
         $values = [...$data[$definitionID]];
 
-        foreach ($questions as $key => $value) {
+        foreach ($questions as $value) {
             if (!array_key_exists($value->key, $values)) {
                 $values[$value->key] = null;
             }
@@ -86,17 +86,11 @@ class SurveyController extends Controller
     {
         $surveyDefinitions = collect();
 
-        foreach ($definitions as $key => $definition) {
-            $definitionData = [
-                'survey_id' => $surveyID,
-                'title' => $definition['title'],
-                'type' => $definition['type'],
-                'description' => $definition['description'],
-                'order_id' => $definition['order_id']
-            ];
+        foreach ($definitions as $definition) {
+            $definition['survey_id'] = $surveyID;
 
             $surveyDefinitions->push([
-                'definition' => SurveyDefinition::create($definitionData),
+                'definition' => SurveyDefinition::create($definition),
                 'questions' => collect($definition['questions']),
                 'choices' => collect($definition['choices'])
             ]);
@@ -107,7 +101,7 @@ class SurveyController extends Controller
 
     private function createSurveyDefinitionValues($data, $type, $surveyDefinitionID)
     {
-        foreach ($data as $key => $value) {
+        foreach ($data as $value) {
             $value['type'] = $type;
             $value['key'] = Helper::transformString($value['text']);
             $value['survey_definition_id'] = $surveyDefinitionID;
