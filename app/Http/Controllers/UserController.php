@@ -45,7 +45,7 @@ class UserController extends Controller
 
     public function getReports()
     {
-        $users  = UserAction::where('user_id', 8)->with(['attr' => function ($query) {
+        $users  = UserAction::where('user_id', auth()->id())->with(['attr' => function ($query) {
             $query->select('id', 'title');
         }, 'property'  => function ($query) {
             $query->select('id', 'title');
