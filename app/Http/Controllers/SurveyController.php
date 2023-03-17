@@ -9,6 +9,7 @@ use App\Models\SurveyDefinition;
 use Illuminate\Support\Collection;
 use App\Models\SurveyDefinitionValue;
 use App\Http\Resources\SurveyDefinitionResource;
+use App\Models\SurveyScaleGroup;
 
 /*
 Survey Has 4 main types of inputs
@@ -68,18 +69,66 @@ class SurveyController extends Controller
     public function store(Request $request)
     {
         // TODO send survey ID and record ID from front;
-        $data = $request->all();
-        $definitionID = array_key_first($data);
+        $data = collect($request->all());
+        $data = $data->first();
         $questionTypeID = config('constants.surveyDefinitionValueTypeIDS.question');
-        $questions = SurveyDefinitionValue::select(['id', 'survey_definition_id', 'key'])->where('survey_definition_id', $definitionID)->where('type', $questionTypeID)->get();
-        $values = [...$data[$definitionID]];
+        $questions = SurveyDefinitionValue::select(['id', 'survey_definition_id', 'question_id', 'group_id'])->where('survey_definition_id', 1)->where('type', $questionTypeID)->get();
+        $groupCount = $questions->groupBy('group_id')->map->count();
+        $groupTitles = SurveyScaleGroup::all()->map(function ($group) {
+            return [
+                'group_id' => $group->id,
+                'group_title' => $group->title,
+            ];
+        });
 
-        foreach ($questions as $value) {
-            if (!array_key_exists($value->key, $values)) {
-                $values[$value->key] = null;
+
+        $new = collect();
+        $questionValues = collect();
+
+        // foreach ($questions as $key => $question) {
+        //     $array = [];
+        //     if (!array_key_exists($question->question_id, $data)) {
+        //         $array['value'] = null;
+        //     } else {
+        //         $array['value'] = $data[$question->question_id];
+        //     }
+        //     $array['id'] = $question->question_id;
+        //     $array['group_id'] = $question->group_id;
+        //     $new->push($array);
+        // }
+
+        foreach ($questions as $key => $question) {
+            if (!array_key_exists($question->question_id, $data)) {
+                continue;
             }
+
+            $array = [];
+            $array['value'] = $data[$question->question_id];
+            $array['id'] = $question->question_id;
+            $array['group_id'] = $question->group_id;
+            $questionValues->push($array);
         }
-        return  $values;
+        $groupedValues = $questionValues->groupBy('group_id');
+
+        $results = $groupTitles->map(function ($group) use ($groupCount, $groupedValues) {
+            $result = null;
+
+            if ($groupedValues->offsetExists($group['group_id'])) {
+                $result = round($groupedValues[$group['group_id']]->sum('value') / $groupCount[$group['group_id']], 4);
+            }
+
+            return array_merge($group, ['result' => $result, 'resultLevel' => $this->getResultLevel(round($result, 1))]);
+        });
+
+        $gst = [
+            'group_id' => null,
+            'group_title' => 'დისტრესის სიმძიმის ზოგადი ინდექსი (GST)',
+            'result' => round($questionValues->sum('value') / 90, 4)
+        ];
+
+        $gst['resultLevel'] = $this->getResultLevel(round($gst['result'], 1));
+
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $results->prepend($gst)]);
     }
 
     private function createSurveyDefinitions($definitions, $surveyID): Collection
@@ -99,13 +148,40 @@ class SurveyController extends Controller
         return $surveyDefinitions;
     }
 
+    public function getResults()
+    {
+    }
+
     private function createSurveyDefinitionValues($data, $type, $surveyDefinitionID)
     {
         foreach ($data as $value) {
             $value['type'] = $type;
             $value['key'] = Helper::transformString($value['text']);
+            if (array_key_exists('id', $value)) {
+                $value['question_id'] = $value['id'];
+            }
             $value['survey_definition_id'] = $surveyDefinitionID;
             SurveyDefinitionValue::create($value);
+        }
+    }
+
+    private function getResultLevel($result)
+    {
+        $ranges = [
+            [0.1, 0.4, 'ძალიან დაბალი დონე'],
+            [0.5, 1.4, 'დაბალი დონე'],
+            [1.5, 2.4, 'საშუალო დონე'],
+            [2.5, 3.4, 'აწეული დონე'],
+            [3.5, 4.0, 'მაღალი დონე']
+        ];
+
+        foreach ($ranges as $range) {
+            $from = $range[0];
+            $to = $range[1];
+            $title = $range[2];
+            if ($result >= $from && $result <= $to) {
+                return $title;
+            }
         }
     }
 }

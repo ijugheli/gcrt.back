@@ -9,7 +9,7 @@ class SurveyDefinitionValueResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'value' => is_numeric($this->value) ? intval($this->value) : $this->key,
+            'value' => is_numeric($this->value) ? intval($this->value) : intval($this->question_id),
             'text' => $this->text,
         ];
     }

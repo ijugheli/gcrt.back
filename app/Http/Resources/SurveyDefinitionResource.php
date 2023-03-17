@@ -18,6 +18,7 @@ class SurveyDefinitionResource extends JsonResource
         }
 
         return [
+            'showCompletedPage' => false,
             'type' => $this->definitionType,
             'name' => strval($this->id) ,
             'title' => $this->title,
