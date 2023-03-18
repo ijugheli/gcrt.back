@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SurveyScaleGroup extends Model
+class SymptomSurveyGroup extends Model
 {
     protected $fillable = ['id', 'title'];
 }
