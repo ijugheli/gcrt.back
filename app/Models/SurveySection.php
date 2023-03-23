@@ -10,6 +10,7 @@ class SurveySection extends Model
 {
     protected $fillable = ['id', 'survey_id', 'title', 'description', 'type', 'order_id'];
 
+    protected $with = ['questions', 'choices'];
 
     public function survey()
     {

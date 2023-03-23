@@ -10,7 +10,6 @@ use App\Http\Helpers\SurveyHelper;
 use App\Http\Resources\SurveyResource;
 use App\Models\SurveySectionValue;
 use App\Models\SymptomSurveyGroup;
-use App\Http\Resources\SurveySectionResource;
 
 /*
 Survey Has 4 main types of inputs
@@ -74,12 +73,48 @@ class SurveyController extends Controller
 
     public function store(Request $request)
     {
-        $data = collect($request->all());
+        $request = $request->all();
+        $surveyID = $request['surveyID'];
+        $data = collect($request['data']);
+        $surveyIDS = config('constants.surveyIDS');
 
-        return $this->SCL90Handler($data);
+        switch ($surveyID) {
+            case $surveyIDS['SCL90']:
+                return $this->SCL90Handler($data, $surveyID);
+                // case $surveyIDS['ERQ']:
+                // return response()->json();
+            case $surveyIDS['GAD7']:
+                return $this->GAD7AndPHQHandler($data,  $surveyID);
+                // case $surveyIDS['LEC5']:
+            case $surveyIDS['PHQ9']:
+            case $surveyIDS['PHQ15']:
+                return $this->GAD7AndPHQHandler($data, $surveyID);
+                // case $surveyIDS['ITQ']:
+                // case $surveyIDS['CAPS5']:
+            default:
+                return response()->json();
+        }
     }
 
-    private function SCL90Handler($data)
+    // GAD7 AND PHQ SURVEYS RESULTS ARE ALL ANSWERS SUMMED UPM THEN WE GET THE RESULTS RANGE
+    private function GAD7AndPHQHandler($data, $surveyID)
+    {
+        $result = $data->flatten()->sum();
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'success',
+            'data' => [
+                0 => [
+                    'result' => $result,
+                    'resultLevel' => Survey::getResultLevel($result, $surveyID)
+                ]
+            ]
+        ]);
+    }
+
+    // SCL90 ANSWERS ARE DIVIDED BY GROUPS AND GST, groups results are : groupAnswerSum / groupQuestionCount, gst is all answerSum / questionCount
+    private function SCL90Handler($data, $surveyID)
     {
         $data = $data->first();
         $questionTypeID = config('constants.surveySectionValueTypeIDS.question');;
@@ -110,7 +145,7 @@ class SurveyController extends Controller
         // SCL90  groups for result scale
         $groupedAnswers = $surveyAnswers->groupBy('group_id');
 
-        $results = $symptomGroups->map(function ($symptomGroup) use ($SCL90GroupQuestionCount, $groupedAnswers) {
+        $results = $symptomGroups->map(function ($symptomGroup) use ($SCL90GroupQuestionCount, $groupedAnswers, $surveyID) {
             $result = null;
             $groupID = $symptomGroup['group_id'];
 
@@ -118,10 +153,10 @@ class SurveyController extends Controller
                 $result = SurveyHelper::calculateSCL90GroupResult($groupedAnswers, $SCL90GroupQuestionCount, $groupID);
             }
 
-            return array_merge($symptomGroup, ['result' => $result, 'resultLevel' => Survey::getSCL90ResultLevel($result)]);
+            return array_merge($symptomGroup, ['result' => $result, 'resultLevel' => Survey::getResultLevel($result, $surveyID)]);
         });
 
-        return response()->json(['code' => 1, 'message' => 'success', 'data' => $results->prepend(Survey::getSCL90GST($surveyAnswers))]);
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $results->prepend(Survey::getSCL90GST($surveyAnswers, $surveyID))]);
     }
 
     public function getResults()

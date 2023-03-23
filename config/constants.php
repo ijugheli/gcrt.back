@@ -110,6 +110,43 @@ $SCL90Ranges = [
     ['from' => 3.5, 'to' => 4.0, 'title' => 'მაღალი დონე']
 ];
 
+$surveys = [
+    1 => 'SCL90',
+    2 => 'ERQ',
+    3 => 'GAD7',
+    4 => 'LEC5',
+    5 => 'PHQ9',
+    6 => 'PHQ15',
+    7 => 'ITQ',
+    8 => 'CAPS5',
+];
+
+// საინტერპრეტაციო ცხრილი შფოთვის  კითხვარისთვის
+$GAD7Ranges = [
+    ['from' => 7, 'to' => 15, 'title' => 'არ არის/უმნიშვნელოდაა გამოხატული'],
+    ['from' => 16, 'to' => 19, 'title' => 'სუსტად გამოხატული'],
+    ['from' => 20, 'to' => 27, 'title' => 'საშუალო დონე'],
+    ['from' => 28,  'to' => 32, 'title' => 'მწვავედ გამოხატული'],
+];
+
+$PHQ9Ranges = [
+    ['from' => 0, 'to' => 4, 'title' => 'არანაირი'],
+    ['from' => 5, 'to' => 9, 'title' => 'სუსტი დეპრესია'],
+    ['from' => 10, 'to' => 14, 'title' => 'საშუალო დეპრესია'],
+    ['from' => 15,  'to' => 19, 'title' => 'საშუალოდ მწვავე დეპრესია '],
+    ['from' => 20,  'to' => 27, 'title' => 'მწვავე დეპრესია'],
+];
+
+// საინტერპრეტაციო ცხრილი PHQ-15 -თვის
+$PHQ15Ranges = [
+    ['from' => 0, 'to' => 4, 'title' => 'არ არის გამოხატული'],
+    ['from' => 5, 'to' => 9, 'title' => 'სუსტად გამოხატული'],
+    ['from' => 10, 'to' => 14, 'title' => 'საშუალოდ გამოხატული'],
+    ['from' => 15,  'to' => 30, 'title' => 'მწვავედ გამოხატული'],
+];
+
+
+
 return [
     'userActionTypes' => $userActionTypes,
     'userActionTypeTitles' => $userActionTypeTitles,
@@ -124,4 +161,9 @@ return [
     'surveySectionValueTypes' => $surveySectionValueTypes,
     'alphabet' => $alphabet,
     'SCL90Ranges' => $SCL90Ranges,
+    'GAD7Ranges' => $GAD7Ranges,
+    'PHQ15Ranges' => $PHQ15Ranges,
+    'PHQ9Ranges' => $PHQ9Ranges,
+    'surveyIDS' => array_flip($surveys),
+    'surveys' => $surveys
 ];

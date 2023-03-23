@@ -19,4 +19,13 @@ class SurveyHelper
     {
         return round($groupedAnswers[$groupID]->sum('value') / $SCL90GroupQuestionCount[$groupID], 4);
     }
+
+    public static function getRangeTitle($ranges, $result)
+    {
+        foreach ($ranges as $range) {
+            if ($result >= $range['from'] && $result <= $range['to']) {
+                return $range['title'];
+            }
+        }
+    }
 }

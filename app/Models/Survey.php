@@ -23,17 +23,16 @@ class Survey extends Model
         return $this->hasMany(SurveySection::class);
     }
 
-    public static function getSCL90ResultLevel($result)
+    public static function getResultLevel($result, $surveyID)
     {
-        $result =  round($result, 1);
-        foreach (config('constants.SCL90Ranges') as $range) {
-            if ($result >= $range['from'] && $result <= $range['to']) {
-                return $range['title'];
-            }
-        }
+        $result = round($result, 1);
+        $constants = config('constants');
+        // to get appropriate survey range by name
+        $surveyName = $constants['surveys'][$surveyID] . 'Ranges';
+        return SurveyHelper::getRangeTitle($constants[$surveyName], $result);
     }
 
-    public static function getSCL90GST(\Illuminate\Support\Collection $surveyAnswers)
+    public static function getSCL90GST(\Illuminate\Support\Collection $surveyAnswers, $surveyID)
     {
         $gst = [
             'group_id' => null,
@@ -41,7 +40,7 @@ class Survey extends Model
             'result' => SurveyHelper::calculateSCL90GST($surveyAnswers)
         ];
 
-        $gst['resultLevel'] =  self::getSCL90ResultLevel($gst['result']);
+        $gst['resultLevel'] =  self::getResultLevel($gst['result'], $surveyID);
 
         return $gst;
     }
