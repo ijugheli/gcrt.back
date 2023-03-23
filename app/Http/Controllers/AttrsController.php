@@ -611,33 +611,6 @@ class AttrsController extends Controller
         return response()->json(['ოპერაციის შესრულების დროს მოხდა შეცდომა'], 500);
     }
 
-
-    public function test()
-    {
-        SurveyDefinitionValue::whereIn('id', [1, 4, 12, 27, 40, 42, 48, 49, 52, 53, 56, 58])->update(['group_id' => 1]);
-        SurveyDefinitionValue::whereIn('id', [3, 9, 10, 28, 38, 45, 46, 51, 55, 65])->update(['group_id' => 2]);
-        SurveyDefinitionValue::whereIn('id', [6, 21, 34, 36, 37, 41, 61, 69, 73])->update(['group_id' => 3]);
-        SurveyDefinitionValue::whereIn('id', [5, 14, 15, 20, 22, 26, 29, 30, 31, 32, 54, 71, 79])->update(['group_id' => 4]);
-        SurveyDefinitionValue::whereIn('id', [2, 17, 23, 33, 39, 57, 72, 78, 80, 86])->update(['group_id' => 5]);
-        SurveyDefinitionValue::whereIn('id', [11, 24, 63, 67, 74, 81])->update(['group_id' => 6]);
-        SurveyDefinitionValue::whereIn('id', [13, 25, 47, 50, 70, 75, 82])->update(['group_id' => 7]);
-        SurveyDefinitionValue::whereIn('id', [8, 18, 43, 68, 76, 83])->update(['group_id' => 8]);
-        SurveyDefinitionValue::whereIn('id', [7, 16, 35, 62, 77, 84, 85, 87, 88, 90])->update(['group_id' => 9]);
-        SurveyDefinitionValue::whereIn('id', [19, 60, 44, 59, 64, 66, 89])->update(['group_id' => 10]);
-        // $ids = Attr::pluck('id');
-        // $valueIDS = AttrValue::pluck('id');
-        // $propIDS = AttrProperty::pluck('id');
-
-        // $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
-        // $value = AttrValue::get()->update(['status_id' => 1]);
-        // $property = AttrProperty::get()->update(['status_id' => 1]);
-
-        // return [
-        //     'attr' => $attr,
-        //     'values' => $value,
-        //     'property' => $property
-        // ];
-    }
     public function remove(Request $request)
     {
         $attrID = intval(request()->attr_id);

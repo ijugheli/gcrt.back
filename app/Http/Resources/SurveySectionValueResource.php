@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SurveyDefinitionValueResource extends JsonResource
+class SurveySectionValueResource extends JsonResource
 {
     public function toArray($request)
     {

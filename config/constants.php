@@ -55,7 +55,7 @@ $surveyQuestionTypes = [
     4 => 'text',
 ];
 
-$surveyDefinitionValueTypes = [
+$surveySectionValueTypes = [
     0 => 'question',
     1 => 'choice',
 ];
@@ -102,6 +102,13 @@ $userActionTypeTitles = [
     13 => 'OTP გამორთვა',
 ];
 
+$SCL90Ranges = [
+    ['from' => 0.1, 'to' => 0.4, 'title' => 'ძალიან დაბალი დონე'],
+    ['from' => 0.5, 'to' => 1.4, 'title' => 'დაბალი დონე'],
+    ['from' => 1.5, 'to' => 2.4, 'title' => 'საშუალო დონე'],
+    ['from' => 2.5,  'to' => 3.4, 'title' => 'აწეული დონე'],
+    ['from' => 3.5, 'to' => 4.0, 'title' => 'მაღალი დონე']
+];
 
 return [
     'userActionTypes' => $userActionTypes,
@@ -113,7 +120,8 @@ return [
     'validationTypeIDS' => array_flip($validationTypes),
     'surveyQuestionTypes' => $surveyQuestionTypes,
     'surveyQuestionTypeIDS' => array_flip($surveyQuestionTypes),
-    'surveyDefinitionValueTypeIDS' => array_flip($surveyDefinitionValueTypes),
-    'surveyDefinitionValueTypes' => $surveyDefinitionValueTypes,
+    'surveySectionValueTypeIDS' => array_flip($surveySectionValueTypes),
+    'surveySectionValueTypes' => $surveySectionValueTypes,
     'alphabet' => $alphabet,
+    'SCL90Ranges' => $SCL90Ranges,
 ];

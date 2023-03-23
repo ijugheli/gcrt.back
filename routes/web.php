@@ -80,11 +80,12 @@ $router->group(['prefix' => $backendPrefix . '/user'], function () use ($router)
 
 $router->group(['prefix' => $backendPrefix], function () use ($router) {
     $router->post('/survey', 'SurveyController@create');
+    $router->post('/survey/list', 'SurveyController@list');
     $router->post('/survey/store', 'SurveyController@store');
-    $router->get('/survey/{attr_id}', 'SurveyController@getSurvey');
+    $router->get('/survey/{survey_id}', 'SurveyController@getSurvey');
 
 
-    $router->get('test', 'AttrsController@test');
+    $router->get('test', 'SurveyController@test');
     $router->get('user/report', 'UserController@getReports');
 });
 // $router->group(['prefix' => '$backendPrefix'], function () use ($router) {

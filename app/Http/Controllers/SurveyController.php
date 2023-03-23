@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Survey;
 use App\Http\Helpers\Helper;
 use Illuminate\Http\Request;
-use App\Models\SurveyDefinition;
-use Illuminate\Support\Collection;
-use App\Models\SurveyDefinitionValue;
-use App\Http\Resources\SurveyDefinitionResource;
+use App\Models\SurveySection;
+use App\Http\Helpers\SurveyHelper;
+use App\Http\Resources\SurveyResource;
+use App\Models\SurveySectionValue;
 use App\Models\SymptomSurveyGroup;
+use App\Http\Resources\SurveySectionResource;
 
 /*
 Survey Has 4 main types of inputs
@@ -29,24 +30,24 @@ class SurveyController extends Controller
     {
         $data = $request->all();
         $survey = Survey::create(['attr_id' => $data['attrID'], 'title' => $data['title']]);
-        $surveyDefinitions = $this->createSurveyDefinitions($data['definitions'], $survey->id);
+        $surveySections = SurveySection::createAndMapSections($data['definitions'], $survey->id);
 
-        foreach ($surveyDefinitions as $surveyDefinition) {
-            $typeIDS  = config('constants.surveyDefinitionValueTypeIDS');
+        foreach ($surveySections as $section) {
+            $typeIDS  = config('constants.surveySectionValueTypeIDS');
 
-            if ($surveyDefinition['questions']->isNotEmpty() && $surveyDefinition['definition']->isMatrix()) {
-                $this->createSurveyDefinitionValues($surveyDefinition['questions'], $typeIDS['question'], $surveyDefinition['definition']->id);
+            if ($section['questions']->isNotEmpty() && $section['section']->isMatrix()) {
+                $this->createSurveySectionValues($section['questions'], $typeIDS['question'], $section['section']->id);
             }
 
-            if ($surveyDefinition['choices']->isNotEmpty()) {
-                $this->createSurveyDefinitionValues($surveyDefinition['choices'], $typeIDS['choice'], $surveyDefinition['definition']->id);
+            if ($section['choices']->isNotEmpty()) {
+                $this->createSurveySectionValues($section['choices'], $typeIDS['choice'], $section['section']->id);
             }
         }
     }
 
     public function getSurvey()
     {
-        $survey = Survey::where('attr_id', request()->route('attr_id'))->first();
+        $survey = Survey::find(request()->route('survey_id'));
 
         if (is_null($survey)) {
             return response()->json([
@@ -58,19 +59,32 @@ class SurveyController extends Controller
         return response()->json([
             'code' => 1,
             'message' => 'success',
-            'surveyID' => $survey->id,
-            'elements' => SurveyDefinitionResource::collection($survey->definitions)
+            'data' => SurveyResource::make($survey)
+        ]);
+    }
+
+    public function list()
+    {
+        return response()->json([
+            'code' => 1,
+            'message' => 'success',
+            'data' => Survey::select(['id', 'title'])->get()
         ]);
     }
 
     public function store(Request $request)
     {
-        // TODO send survey ID and record ID from front;
         $data = collect($request->all());
+
+        return $this->SCL90Handler($data);
+    }
+
+    private function SCL90Handler($data)
+    {
         $data = $data->first();
-        $questionTypeID = config('constants.surveyDefinitionValueTypeIDS.question');
-        $questions = SurveyDefinitionValue::select(['id', 'survey_definition_id', 'question_id', 'group_id'])->where('survey_definition_id', 1)->where('type', $questionTypeID)->get();
-        $symptomGroupCount = $questions->groupBy('group_id')->map->count();
+        $questionTypeID = config('constants.surveySectionValueTypeIDS.question');;
+        $questions = SurveySectionValue::select(['id', 'survey_section_id', 'question_id', 'group_id'])->where('survey_section_id', 1)->where('type', $questionTypeID)->get();
+        $SCL90GroupQuestionCount = $questions->groupBy('group_id')->map->count();
         $symptomGroups = SymptomSurveyGroup::all()->map(function ($group) {
             return [
                 'group_id' => $group->id,
@@ -78,21 +92,7 @@ class SurveyController extends Controller
             ];
         });
 
-
-        $new = collect();
         $surveyAnswers = collect();
-
-        // foreach ($questions as $key => $question) {
-        //     $array = [];
-        //     if (!array_key_exists($question->question_id, $data)) {
-        //         $array['value'] = null;
-        //     } else {
-        //         $array['value'] = $data[$question->question_id];
-        //     }
-        //     $array['id'] = $question->question_id;
-        //     $array['group_id'] = $question->group_id;
-        //     $new->push($array);
-        // }
 
         // Set all given question values
         foreach ($questions as $key => $question) {
@@ -107,82 +107,82 @@ class SurveyController extends Controller
             $surveyAnswers->push($array);
         }
 
-        // To get sum of each symptom groups
+        // SCL90  groups for result scale
         $groupedAnswers = $surveyAnswers->groupBy('group_id');
 
-        $results = $symptomGroups->map(function ($symptomGroup) use ($symptomGroupCount, $groupedAnswers) {
+        $results = $symptomGroups->map(function ($symptomGroup) use ($SCL90GroupQuestionCount, $groupedAnswers) {
             $result = null;
+            $groupID = $symptomGroup['group_id'];
 
-            if ($groupedAnswers->offsetExists($symptomGroup['group_id'])) {
-                $result = round($groupedAnswers[$symptomGroup['group_id']]->sum('value') / $symptomGroupCount[$symptomGroup['group_id']], 4);
+            if ($groupedAnswers->offsetExists($groupID)) {
+                $result = SurveyHelper::calculateSCL90GroupResult($groupedAnswers, $SCL90GroupQuestionCount, $groupID);
             }
 
-            return array_merge($symptomGroup, ['result' => $result, 'resultLevel' => $this->getResultLevel(round($result, 1))]);
+            return array_merge($symptomGroup, ['result' => $result, 'resultLevel' => Survey::getSCL90ResultLevel($result)]);
         });
 
-        // All question sum divided by question count (90)
-        $gst = [
-            'group_id' => null,
-            'group_title' => 'დისტრესის სიმძიმის ზოგადი ინდექსი (GST)',
-            'result' => round($surveyAnswers->sum('value') / 90, 4)
-        ];
-
-        $gst['resultLevel'] = $this->getResultLevel(round($gst['result'], 1));
-
-        return response()->json(['code' => 1, 'message' => 'success', 'data' => $results->prepend($gst)]);
-    }
-
-    private function createSurveyDefinitions($definitions, $surveyID): Collection
-    {
-        $surveyDefinitions = collect();
-
-        foreach ($definitions as $definition) {
-            $definition['survey_id'] = $surveyID;
-
-            $surveyDefinitions->push([
-                'definition' => SurveyDefinition::create($definition),
-                'questions' => collect($definition['questions']),
-                'choices' => collect($definition['choices'])
-            ]);
-        }
-
-        return $surveyDefinitions;
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $results->prepend(Survey::getSCL90GST($surveyAnswers))]);
     }
 
     public function getResults()
     {
     }
 
-    private function createSurveyDefinitionValues($data, $type, $surveyDefinitionID)
+    private function createSurveySectionValues($data, $type, $surveySectionID)
     {
         foreach ($data as $value) {
             $value['type'] = $type;
             $value['key'] = Helper::transformString($value['text']);
             if (array_key_exists('id', $value)) {
                 $value['question_id'] = $value['id'];
+                unset($value['id']);
             }
-            $value['survey_definition_id'] = $surveyDefinitionID;
-            SurveyDefinitionValue::create($value);
+            $value['survey_section_id'] = $surveySectionID;
+            SurveySectionValue::create($value);
         }
     }
 
-    private function getResultLevel($result)
+    public function test()
     {
-        $ranges = [
-            [0.1, 0.4, 'ძალიან დაბალი დონე'],
-            [0.5, 1.4, 'დაბალი დონე'],
-            [1.5, 2.4, 'საშუალო დონე'],
-            [2.5, 3.4, 'აწეული დონე'],
-            [3.5, 4.0, 'მაღალი დონე']
+        $map =   [
+            "6 თვეზე ნაკლები ხნის წინ",
+            "6-12 თვის წინ",
+            "1-5 წლის წინ",
+            "5-10 წლის წინ",
+            "10-20 წლის წინ",
+            "20 წელზე მეტი ხნის წინ"
         ];
+        $temp = [];
 
-        foreach ($ranges as $range) {
-            $from = $range[0];
-            $to = $range[1];
-            $title = $range[2];
-            if ($result >= $from && $result <= $to) {
-                return $title;
-            }
+        foreach ($map as $key => $item) {
+            $temp[] = ['id' => $key + 1, 'value' => trim($item), 'text' => trim($item)];
         }
+        return $temp;
+
+        // {
+        //     SurveyDefinitionValue::whereIn('id', [1, 4, 12, 27, 40, 42, 48, 49, 52, 53, 56, 58])->update(['group_id' => 1]);
+        //     SurveyDefinitionValue::whereIn('id', [3, 9, 10, 28, 38, 45, 46, 51, 55, 65])->update(['group_id' => 2]);
+        //     SurveyDefinitionValue::whereIn('id', [6, 21, 34, 36, 37, 41, 61, 69, 73])->update(['group_id' => 3]);
+        //     SurveyDefinitionValue::whereIn('id', [5, 14, 15, 20, 22, 26, 29, 30, 31, 32, 54, 71, 79])->update(['group_id' => 4]);
+        //     SurveyDefinitionValue::whereIn('id', [2, 17, 23, 33, 39, 57, 72, 78, 80, 86])->update(['group_id' => 5]);
+        //     SurveyDefinitionValue::whereIn('id', [11, 24, 63, 67, 74, 81])->update(['group_id' => 6]);
+        //     SurveyDefinitionValue::whereIn('id', [13, 25, 47, 50, 70, 75, 82])->update(['group_id' => 7]);
+        //     SurveyDefinitionValue::whereIn('id', [8, 18, 43, 68, 76, 83])->update(['group_id' => 8]);
+        //     SurveyDefinitionValue::whereIn('id', [7, 16, 35, 62, 77, 84, 85, 87, 88, 90])->update(['group_id' => 9]);
+        //     SurveyDefinitionValue::whereIn('id', [19, 60, 44, 59, 64, 66, 89])->update(['group_id' => 10]);
+
+        // $ids = Attr::pluck('id');
+        // $valueIDS = AttrValue::pluck('id');
+        // $propIDS = AttrProperty::pluck('id');
+
+        // $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
+        // $value = AttrValue::get()->update(['status_id' => 1]);
+        // $property = AttrProperty::get()->update(['status_id' => 1]);
+
+        // return [
+        //     'attr' => $attr,
+        //     'values' => $value,
+        //     'property' => $property
+        // ];
     }
 }

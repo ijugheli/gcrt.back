@@ -8,7 +8,7 @@ class Helper
 {
     static public function transformString($string)
     {
-        $letters = ['_', '-', '(', ')', '/', '\\', ':'];
+        $letters = ['_', '-', '(', ')', '/', '\\', ':', '.', '“', '„', '?'];
 
         $string = str_replace(',', '', $string);
         $string = str_replace(' ', '_', trim($string));
