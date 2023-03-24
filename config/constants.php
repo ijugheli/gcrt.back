@@ -145,6 +145,24 @@ $PHQ15Ranges = [
     ['from' => 15,  'to' => 30, 'title' => 'მწვავედ გამოხატული'],
 ];
 
+$ITQ = [
+    'P1_2' => ['group_title' => 'აწმყოში ხელახალი განცდის (Re-experiencing) კრიტერიუმები (RE_DX)', 'sum_title' => 'აწმყოში ხელახალი განცდის (Re- experiencing) ქულა (Re)'],
+    'P3_4' => ['group_title' => 'თავის არიდების კრიტერიუმები (AV_DX)', 'sum_title' => 'თავის არიდების (Avoidance) ქულა (AV)'],
+    'P5_6' => ['group_title' => 'მიმდინარე საფრთხის შეგრძნების კრიტერიუმები (TH_DX)', 'sum_title' => 'მიმდინარე საფრთხის შეგრძნების (Sense of current threat) ქულა (Th)'],
+    'P7_9' => ['group_title' => 'პტსა-თი გამოწვეული ფუნქციური მოშლის (PTSDFI) კრიტერიუმები'],
+    'C1_2' => ['group_title' => 'აფექტური დისრეგულაციის (Affective dysregulation) კრიტერიუმები (AD_dx)', 'sum_title' => 'აფექტური დისრეგულაციის (Affective dysregulation) ქულა (AD)'],
+    'C3_4' => ['group_title' => 'ნეგატიური თვითაღქმის (Negative self-concept) კრიტერიუმები (NSC_dx)', 'sum_title' => 'ნეგატიური თვითაღქმის (Negative self-concept) ქულა (NSC)'],
+    'C5_6' => ['group_title' => 'ურთიერთობის სირთულეების (Disturbances in relationships) კრიტერიუმები (DR_dx)', 'sum_title' => 'ურთიერთობის სირთულეების (Disturbances in relationships) ქულა (DR)'],
+    'C7_9' => ['group_title' => 'თოდ-ით გამოწვეული ფუნქციური მოშლის (DSOFI) კრიტერიუმები.'],
+];
+
+$meetsAllITQCriterias = function ($item) {
+    return $item['result'] == true;
+};
+
+$meetsITQCriterias = function (int $value, int $key) {
+    return $value >= 2;
+};
 
 
 return [
@@ -165,5 +183,8 @@ return [
     'PHQ15Ranges' => $PHQ15Ranges,
     'PHQ9Ranges' => $PHQ9Ranges,
     'surveyIDS' => array_flip($surveys),
-    'surveys' => $surveys
+    'surveys' => $surveys,
+    'ITQ' => $ITQ,
+    'meetsAllITQCriterias' => $meetsAllITQCriterias,
+    'meetsITQCriterias' => $meetsITQCriterias
 ];

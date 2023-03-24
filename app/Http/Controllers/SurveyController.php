@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Survey;
+use Illuminate\Support\Str;
 use App\Http\Helpers\Helper;
 use Illuminate\Http\Request;
 use App\Models\SurveySection;
 use App\Http\Helpers\SurveyHelper;
-use App\Http\Resources\SurveyResource;
 use App\Models\SurveySectionValue;
 use App\Models\SymptomSurveyGroup;
+
+use App\Http\Resources\SurveyResource;
+use function PHPUnit\Framework\returnSelf;
 
 /*
 Survey Has 4 main types of inputs
@@ -89,7 +92,10 @@ class SurveyController extends Controller
             case $surveyIDS['PHQ9']:
             case $surveyIDS['PHQ15']:
                 return $this->GAD7AndPHQHandler($data, $surveyID);
-                // case $surveyIDS['ITQ']:
+            case $surveyIDS['ITQ']:
+                return $this->ITCHandler($data->map(function ($item) {
+                    return collect($item);
+                }));
                 // case $surveyIDS['CAPS5']:
             default:
                 return response()->json();
@@ -113,12 +119,41 @@ class SurveyController extends Controller
         ]);
     }
 
+    private function ITCHandler($data)
+    {
+        $results = collect([]);
+        $keys = ['P' => $data[11], 'C' => $data[13], 'P7_9' => $data[12], 'C7_9' => $data[14]];
+
+        foreach ($keys as $itq => $data) {
+            if (strlen($itq) != 1) {
+                $results[$itq] = Survey::ITQResultModel($data->values(), $itq, false);
+                continue;
+            }
+
+            for ($i = 1; $i < count($data); $i += 2) {
+                $values = collect([$data[$i], $data[$i + 1]]);
+                $key = $itq . $i . '_' . $i + 1;
+                $results[$key] = Survey::ITQResultModel($values, $key);
+            }
+        }
+
+        $hasKPTSA = $results->every(config('constants.meetsAllITQCriterias'));
+        $hasPTSA = Survey::meetsITQCriterias($results, 'P');
+        $hasTOD = Survey::meetsITQCriterias($results, 'C');
+
+        $results['KPTSA'] = ['group_title' => 'KPTSA', 'key' => 'KPTSA', 'result' => $hasKPTSA];
+        $results['PTSA']  = ['group_title' => 'PTSA', 'key' => 'PTSA', 'sum' => Survey::filterByITQKey($results, 'P')->pluck('sum')->sum(), 'result' => $hasPTSA && !$hasTOD];
+        $results['TOD']  = ['group_title' => 'TOD', 'key' => 'TOD', 'sum' => Survey::filterByITQKey($results, 'C')->pluck('sum')->sum(), 'result' => $hasTOD];
+
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $results->values()]);
+    }
+
     // SCL90 ANSWERS ARE DIVIDED BY GROUPS AND GST, groups results are : groupAnswerSum / groupQuestionCount, gst is all answerSum / questionCount
     private function SCL90Handler($data, $surveyID)
     {
         $data = $data->first();
-        $questionTypeID = config('constants.surveySectionValueTypeIDS.question');;
-        $questions = SurveySectionValue::select(['id', 'survey_section_id', 'question_id', 'group_id'])->where('survey_section_id', 1)->where('type', $questionTypeID)->get();
+        $questionTypeID = config('constants.surveySectionValueTypeIDS.question');
+        $questions = SurveySectionValue::select(['id', 'survey_section_id', 'question_id', 'group_id'])->where('survey_section_id', $surveyID)->where('type', $questionTypeID)->get();
         $SCL90GroupQuestionCount = $questions->groupBy('group_id')->map->count();
         $symptomGroups = SymptomSurveyGroup::all()->map(function ($group) {
             return [
@@ -135,14 +170,14 @@ class SurveyController extends Controller
                 continue;
             }
 
-            $array = [];
-            $array['value'] = $data[$question->question_id]; //  0,1,2,3,4
-            $array['id'] = $question->question_id;
-            $array['group_id'] = $question->group_id;
-            $surveyAnswers->push($array);
+            $temp = [];
+            $temp['value'] = $data[$question->question_id]; //  0,1,2,3,4
+            $temp['id'] = $question->question_id;
+            $temp['group_id'] = $question->group_id;
+            $surveyAnswers->push($temp);
         }
 
-        // SCL90  groups for result scale
+        // current SCL90  groups results for the sum
         $groupedAnswers = $surveyAnswers->groupBy('group_id');
 
         $results = $symptomGroups->map(function ($symptomGroup) use ($SCL90GroupQuestionCount, $groupedAnswers, $surveyID) {
@@ -177,47 +212,78 @@ class SurveyController extends Controller
         }
     }
 
+
     public function test()
     {
-        $map =   [
-            "6 თვეზე ნაკლები ხნის წინ",
-            "6-12 თვის წინ",
-            "1-5 წლის წინ",
-            "5-10 წლის წინ",
-            "10-20 წლის წინ",
-            "20 წელზე მეტი ხნის წინ"
-        ];
-        $temp = [];
+        $data = json_decode('{ "surveyID": 7, "data": { "11": { "1": 2, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0 }, "12": { "7": 0, "8": 0, "9": 0 }, "13": { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0 }, "14": { "7": 0, "8": 0, "9": 0 } } }', true);
+        $results = collect([]);
+        $data = $data['data'];
+        $keys = ['P' => collect($data[11]), 'C' => collect($data[13]), 'P7_9' => collect($data[12]), 'C7_9' => collect($data[14])];
 
-        foreach ($map as $key => $item) {
-            $temp[] = ['id' => $key + 1, 'value' => trim($item), 'text' => trim($item)];
+        foreach ($keys as $itq => $data) {
+            if (strlen($itq) != 1) {
+                $results[$itq] = Survey::ITQResultModel($data->values(), $itq, false);
+                continue;
+            }
+
+            for ($i = 1; $i < count($data); $i += 2) {
+                $values = collect([$data[$i], $data[$i + 1]]);
+                $key = $itq . $i . '_' . $i + 1;
+                $results[$key] = Survey::ITQResultModel($values, $key);
+            }
         }
-        return $temp;
 
-        // {
-        //     SurveyDefinitionValue::whereIn('id', [1, 4, 12, 27, 40, 42, 48, 49, 52, 53, 56, 58])->update(['group_id' => 1]);
-        //     SurveyDefinitionValue::whereIn('id', [3, 9, 10, 28, 38, 45, 46, 51, 55, 65])->update(['group_id' => 2]);
-        //     SurveyDefinitionValue::whereIn('id', [6, 21, 34, 36, 37, 41, 61, 69, 73])->update(['group_id' => 3]);
-        //     SurveyDefinitionValue::whereIn('id', [5, 14, 15, 20, 22, 26, 29, 30, 31, 32, 54, 71, 79])->update(['group_id' => 4]);
-        //     SurveyDefinitionValue::whereIn('id', [2, 17, 23, 33, 39, 57, 72, 78, 80, 86])->update(['group_id' => 5]);
-        //     SurveyDefinitionValue::whereIn('id', [11, 24, 63, 67, 74, 81])->update(['group_id' => 6]);
-        //     SurveyDefinitionValue::whereIn('id', [13, 25, 47, 50, 70, 75, 82])->update(['group_id' => 7]);
-        //     SurveyDefinitionValue::whereIn('id', [8, 18, 43, 68, 76, 83])->update(['group_id' => 8]);
-        //     SurveyDefinitionValue::whereIn('id', [7, 16, 35, 62, 77, 84, 85, 87, 88, 90])->update(['group_id' => 9]);
-        //     SurveyDefinitionValue::whereIn('id', [19, 60, 44, 59, 64, 66, 89])->update(['group_id' => 10]);
+        $hasKPTSA = $results->every(config('constants.meetsAllITQCriterias'));
+        $hasPTSA = Survey::meetsITQCriterias($results, 'P');
+        $hasTOD = Survey::meetsITQCriterias($results, 'C');
 
-        // $ids = Attr::pluck('id');
-        // $valueIDS = AttrValue::pluck('id');
-        // $propIDS = AttrProperty::pluck('id');
+        $results['KPTSA'] = ['group_title' => 'KPTSA', 'result' => $hasKPTSA];
+        $results['PTSA']  = ['group_title' => 'PTSA', 'sum' => Survey::filterByITQKey($results, 'P')->pluck('sum')->sum(), 'result' => $hasPTSA && !$hasTOD];
+        $results['TOD']  = ['group_title' => 'TOD', 'sum' => Survey::filterByITQKey($results, 'C')->pluck('sum')->sum(), 'resu;t' => $hasTOD];
 
-        // $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
-        // $value = AttrValue::get()->update(['status_id' => 1]);
-        // $property = AttrProperty::get()->update(['status_id' => 1]);
-
-        // return [
-        //     'attr' => $attr,
-        //     'values' => $value,
-        //     'property' => $property
-        // ];
+        return response()->json($results->values());
     }
+    // public function test()
+    // {
+    //     $map =   [
+    //         "6 თვეზე ნაკლები ხნის წინ",
+    //         "6-12 თვის წინ",
+    //         "1-5 წლის წინ",
+    //         "5-10 წლის წინ",
+    //         "10-20 წლის წინ",
+    //         "20 წელზე მეტი ხნის წინ"
+    //     ];
+    //     $temp = [];
+
+    //     foreach ($map as $key => $item) {
+    //         $temp[] = ['id' => $key + 1, 'value' => trim($item), 'text' => trim($item)];
+    //     }
+    //     return $temp;
+
+    //     // {
+    //     //     SurveyDefinitionValue::whereIn('id', [1, 4, 12, 27, 40, 42, 48, 49, 52, 53, 56, 58])->update(['group_id' => 1]);
+    //     //     SurveyDefinitionValue::whereIn('id', [3, 9, 10, 28, 38, 45, 46, 51, 55, 65])->update(['group_id' => 2]);
+    //     //     SurveyDefinitionValue::whereIn('id', [6, 21, 34, 36, 37, 41, 61, 69, 73])->update(['group_id' => 3]);
+    //     //     SurveyDefinitionValue::whereIn('id', [5, 14, 15, 20, 22, 26, 29, 30, 31, 32, 54, 71, 79])->update(['group_id' => 4]);
+    //     //     SurveyDefinitionValue::whereIn('id', [2, 17, 23, 33, 39, 57, 72, 78, 80, 86])->update(['group_id' => 5]);
+    //     //     SurveyDefinitionValue::whereIn('id', [11, 24, 63, 67, 74, 81])->update(['group_id' => 6]);
+    //     //     SurveyDefinitionValue::whereIn('id', [13, 25, 47, 50, 70, 75, 82])->update(['group_id' => 7]);
+    //     //     SurveyDefinitionValue::whereIn('id', [8, 18, 43, 68, 76, 83])->update(['group_id' => 8]);
+    //     //     SurveyDefinitionValue::whereIn('id', [7, 16, 35, 62, 77, 84, 85, 87, 88, 90])->update(['group_id' => 9]);
+    //     //     SurveyDefinitionValue::whereIn('id', [19, 60, 44, 59, 64, 66, 89])->update(['group_id' => 10]);
+
+    //     // $ids = Attr::pluck('id');
+    //     // $valueIDS = AttrValue::pluck('id');
+    //     // $propIDS = AttrProperty::pluck('id');
+
+    //     // $attr =  Attr::whereIn('id', $ids)->update(['status_id' => 1]);
+    //     // $value = AttrValue::get()->update(['status_id' => 1]);
+    //     // $property = AttrProperty::get()->update(['status_id' => 1]);
+
+    //     // return [
+    //     //     'attr' => $attr,
+    //     //     'values' => $value,
+    //     //     'property' => $property
+    //     // ];
+    // }
 }
