@@ -80,7 +80,7 @@ $router->group(['prefix' => $backendPrefix . '/user'], function () use ($router)
 
 $router->group(['prefix' => $backendPrefix], function () use ($router) {
     $router->post('/survey', 'SurveyController@create');
-    $router->post('/survey/list', 'SurveyController@list');
+    $router->get('/survey/list', 'SurveyController@list');
     $router->post('/survey/store', 'SurveyController@store');
     $router->get('/survey/{survey_id}', 'SurveyController@getSurvey');
 

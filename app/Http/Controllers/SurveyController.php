@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Survey;
-use Illuminate\Support\Str;
-use App\Http\Helpers\Helper;
 use Illuminate\Http\Request;
 use App\Models\SurveySection;
 use App\Http\Helpers\SurveyHelper;
@@ -12,7 +10,6 @@ use App\Models\SurveySectionValue;
 use App\Models\SymptomSurveyGroup;
 
 use App\Http\Resources\SurveyResource;
-use function PHPUnit\Framework\returnSelf;
 
 /*
 Survey Has 4 main types of inputs
@@ -32,37 +29,19 @@ class SurveyController extends Controller
     {
         $data = $request->all();
         $survey = Survey::create(['attr_id' => $data['attrID'], 'title' => $data['title']]);
-        $surveySections = SurveySection::createAndMapSections($data['definitions'], $survey->id);
+        $surveySections = SurveySection::saveMany($data['definitions'], $survey->id);
 
         foreach ($surveySections as $section) {
             $typeIDS  = config('constants.surveySectionValueTypeIDS');
 
             if ($section['questions']->isNotEmpty() && $section['section']->isMatrix()) {
-                $this->createSurveySectionValues($section['questions'], $typeIDS['question'], $section['section']->id);
+                SurveySectionValue::saveMany($section['questions'], $typeIDS['question'], $section['section']->id);
             }
 
             if ($section['choices']->isNotEmpty()) {
-                $this->createSurveySectionValues($section['choices'], $typeIDS['choice'], $section['section']->id);
+                SurveySectionValue::saveMany($section['choices'], $typeIDS['choice'], $section['section']->id);
             }
         }
-    }
-
-    public function getSurvey()
-    {
-        $survey = Survey::find(request()->route('survey_id'));
-
-        if (is_null($survey)) {
-            return response()->json([
-                'code' => 0,
-                'message', 'კითხვარი ვერ მოიძებნა'
-            ], 400);
-        }
-
-        return response()->json([
-            'code' => 1,
-            'message' => 'success',
-            'data' => SurveyResource::make($survey)
-        ]);
     }
 
     public function list()
@@ -70,7 +49,7 @@ class SurveyController extends Controller
         return response()->json([
             'code' => 1,
             'message' => 'success',
-            'data' => Survey::select(['id', 'title'])->get()
+            'data' => SurveyResource::collection(Survey::all()),
         ]);
     }
 
@@ -119,20 +98,33 @@ class SurveyController extends Controller
         ]);
     }
 
+    /*
+        p1-6 and c1-6 logic
+            If (p1 >= 2 or p2 >=2) then meets X criteria
+        p7-9 and c7-9 logic
+            If (p7 >= 2 or p8 >= 2 or p9 >= 2) then meets X criteria
+        PTSA
+            If all P criterias are met && !TOD
+        TOD
+            If all C criterias are met
+        KPTSA
+            If all criterias are met
+    */
     private function ITCHandler($data)
     {
         $results = collect([]);
         $keys = ['P' => $data[11], 'C' => $data[13], 'P7_9' => $data[12], 'C7_9' => $data[14]];
 
         foreach ($keys as $itq => $data) {
+            // if P7_9 or C7_9
             if (strlen($itq) != 1) {
                 $results[$itq] = Survey::ITQResultModel($data->values(), $itq, false);
                 continue;
             }
 
             for ($i = 1; $i < count($data); $i += 2) {
-                $values = collect([$data[$i], $data[$i + 1]]);
-                $key = $itq . $i . '_' . $i + 1;
+                $values = collect([$data[$i], $data[$i + 1]]); // values to sum and check criteria
+                $key = $itq . $i . '_' . $i + 1; // P1_2 P3_4
                 $results[$key] = Survey::ITQResultModel($values, $key);
             }
         }
@@ -198,51 +190,36 @@ class SurveyController extends Controller
     {
     }
 
-    private function createSurveySectionValues($data, $type, $surveySectionID)
-    {
-        foreach ($data as $value) {
-            $value['type'] = $type;
-            $value['key'] = Helper::transformString($value['text']);
-            if (array_key_exists('id', $value)) {
-                $value['question_id'] = $value['id'];
-                unset($value['id']);
-            }
-            $value['survey_section_id'] = $surveySectionID;
-            SurveySectionValue::create($value);
-        }
-    }
+    // public function test()
+    // {
+    //     $data = json_decode('{ "surveyID": 7, "data": { "11": { "1": 2, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0 }, "12": { "7": 0, "8": 0, "9": 0 }, "13": { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0 }, "14": { "7": 0, "8": 0, "9": 0 } } }', true);
+    //     $results = collect([]);
+    //     $data = $data['data'];
+    //     $keys = ['P' => collect($data[11]), 'C' => collect($data[13]), 'P7_9' => collect($data[12]), 'C7_9' => collect($data[14])];
 
+    //     foreach ($keys as $itq => $data) {
+    //         if (strlen($itq) != 1) {
+    //             $results[$itq] = Survey::ITQResultModel($data->values(), $itq, false);
+    //             continue;
+    //         }
 
-    public function test()
-    {
-        $data = json_decode('{ "surveyID": 7, "data": { "11": { "1": 2, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0 }, "12": { "7": 0, "8": 0, "9": 0 }, "13": { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0 }, "14": { "7": 0, "8": 0, "9": 0 } } }', true);
-        $results = collect([]);
-        $data = $data['data'];
-        $keys = ['P' => collect($data[11]), 'C' => collect($data[13]), 'P7_9' => collect($data[12]), 'C7_9' => collect($data[14])];
+    //         for ($i = 1; $i < count($data); $i += 2) {
+    //             $values = collect([$data[$i], $data[$i + 1]]);
+    //             $key = $itq . $i . '_' . $i + 1;
+    //             $results[$key] = Survey::ITQResultModel($values, $key);
+    //         }
+    //     }
 
-        foreach ($keys as $itq => $data) {
-            if (strlen($itq) != 1) {
-                $results[$itq] = Survey::ITQResultModel($data->values(), $itq, false);
-                continue;
-            }
+    //     $hasKPTSA = $results->every(config('constants.meetsAllITQCriterias'));
+    //     $hasPTSA = Survey::meetsITQCriterias($results, 'P');
+    //     $hasTOD = Survey::meetsITQCriterias($results, 'C');
 
-            for ($i = 1; $i < count($data); $i += 2) {
-                $values = collect([$data[$i], $data[$i + 1]]);
-                $key = $itq . $i . '_' . $i + 1;
-                $results[$key] = Survey::ITQResultModel($values, $key);
-            }
-        }
+    //     $results['KPTSA'] = ['group_title' => 'KPTSA', 'result' => $hasKPTSA];
+    //     $results['PTSA']  = ['group_title' => 'PTSA', 'sum' => Survey::filterByITQKey($results, 'P')->pluck('sum')->sum(), 'result' => $hasPTSA && !$hasTOD];
+    //     $results['TOD']  = ['group_title' => 'TOD', 'sum' => Survey::filterByITQKey($results, 'C')->pluck('sum')->sum(), 'resu;t' => $hasTOD];
 
-        $hasKPTSA = $results->every(config('constants.meetsAllITQCriterias'));
-        $hasPTSA = Survey::meetsITQCriterias($results, 'P');
-        $hasTOD = Survey::meetsITQCriterias($results, 'C');
-
-        $results['KPTSA'] = ['group_title' => 'KPTSA', 'result' => $hasKPTSA];
-        $results['PTSA']  = ['group_title' => 'PTSA', 'sum' => Survey::filterByITQKey($results, 'P')->pluck('sum')->sum(), 'result' => $hasPTSA && !$hasTOD];
-        $results['TOD']  = ['group_title' => 'TOD', 'sum' => Survey::filterByITQKey($results, 'C')->pluck('sum')->sum(), 'resu;t' => $hasTOD];
-
-        return response()->json($results->values());
-    }
+    //     return response()->json($results->values());
+    // }
     // public function test()
     // {
     //     $map =   [

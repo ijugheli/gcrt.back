@@ -24,17 +24,6 @@ class Survey extends Model
         return $this->hasMany(SurveySection::class);
     }
 
-    // public static function mapITQ() {
-    //     foreach ($sections as $section) {
-    //         # code...
-    //     }
-    // }
-
-    public static function getITQTitle($key, $getGroupTitle = true)
-    {
-        return config('constants.ITQ')[$key][$getGroupTitle ? 'group_title' : 'sum_title'];
-    }
-
     public static function getResultLevel($result, $surveyID)
     {
         $result = round($result, 1);
@@ -44,13 +33,27 @@ class Survey extends Model
         return SurveyHelper::getRangeTitle($constants[$surveyName], $result);
     }
 
+    public static function getSCL90GST(\Illuminate\Support\Collection $surveyAnswers, $surveyID)
+    {
+        $gst = [
+            'group_id' => null,
+            'group_title' => 'დისტრესის სიმძიმის ზოგადი ინდექსი (GST)',
+            'result' => SurveyHelper::calculateSCL90GST($surveyAnswers)
+        ];
+
+        $gst['resultLevel'] =  self::getResultLevel($gst['result'], $surveyID);
+
+        return $gst;
+    }
+
+    // ITQ
+
     public static function ITQResultModel(\Illuminate\Support\Collection $values, string $key, bool $getSumTitle = true)
     {
         return [
             'values' => $values,
             'group_id' => $key,
             'sum' => $values->count() > 2  ? null : $values->sum(),
-            'sum_group_title' => $getSumTitle ? self::getITQTitle($key, false) : null,
             'result' => $values->contains(config('constants.meetsITQCriterias')),
             'group_title' => self::getITQTitle($key)
         ];
@@ -68,16 +71,8 @@ class Survey extends Model
         });
     }
 
-    public static function getSCL90GST(\Illuminate\Support\Collection $surveyAnswers, $surveyID)
+    private static function getITQTitle($key)
     {
-        $gst = [
-            'group_id' => null,
-            'group_title' => 'დისტრესის სიმძიმის ზოგადი ინდექსი (GST)',
-            'result' => SurveyHelper::calculateSCL90GST($surveyAnswers)
-        ];
-
-        $gst['resultLevel'] =  self::getResultLevel($gst['result'], $surveyID);
-
-        return $gst;
+        return config('constants.ITQ')[$key]['group_title'];
     }
 }

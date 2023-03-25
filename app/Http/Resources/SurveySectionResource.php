@@ -18,7 +18,6 @@ class SurveySectionResource extends JsonResource
         }
 
         return [
-            'showCompletedPage' => false,
             'type' => $this->sectionType,
             'name' => strval($this->id) ,
             'title' => $hasTitle ? $this->title : $this->description,

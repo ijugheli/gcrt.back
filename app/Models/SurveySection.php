@@ -54,7 +54,7 @@ class SurveySection extends Model
         return $this->type == config('constants.surveyQuestionTypeIDS.checkbox');
     }
 
-    public static function createAndMapSections($sections, $surveyID): Collection
+    public static function saveMany($sections, $surveyID): Collection
     {
         $surveySections = collect();
 
