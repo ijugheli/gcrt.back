@@ -67,6 +67,7 @@ class AttrValue extends Model
         $node = [
             'data' => [
                 'value_id' => $this->value_id,
+                'p_value_id' => $this->p_value_id,
                 'title' => $this->value,
                 $this->property_id => $this->value,
                 'id' => $this->id

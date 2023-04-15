@@ -164,6 +164,9 @@ $meetsITQCriterias = function (int $value, int $key) {
     return $value >= 2;
 };
 
+// tree select ids for case and cliemnt 43 icd10
+$treeselectsIDs = [45, 30, 44, 42, 27];
+
 
 return [
     'userActionTypes' => $userActionTypes,
@@ -186,5 +189,6 @@ return [
     'surveys' => $surveys,
     'ITQ' => $ITQ,
     'meetsAllITQCriterias' => $meetsAllITQCriterias,
-    'meetsITQCriterias' => $meetsITQCriterias
+    'meetsITQCriterias' => $meetsITQCriterias,
+    'treeselectIDs' => $treeselectsIDs
 ];

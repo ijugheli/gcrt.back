@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DateTime;
 use App\Models\Attr;
 use App\Models\AttrValue;
+use Illuminate\Support\Str;
 use App\Http\Helpers\Helper;
 use App\Models\AttrProperty;
 use Illuminate\Http\Request;
@@ -23,7 +24,10 @@ class AttrsController extends Controller
             if (!$attr->hasOptions())
                 continue;
 
-            $attrs[$key]['options'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
+            $attrs[$key]['options'] = AttrValue::where(function ($query) {
+                $query->where('p_value_id', null)
+                    ->orWhere('p_value_id', 0);
+            })->where('attr_id', $attr->id)->get();
         }
 
         return response()->json(['code' => 1, 'message' => 'success', 'data' => $attrs]);
@@ -247,8 +251,8 @@ class AttrsController extends Controller
         $attrID = request()->attr_id;
         $valueID = request()->value_id;
         $values = AttrValue::where('p_value_id', $valueID)->where('attr_id', $attrID)->get();
-
-        return $this->asNodes($values);
+        $isTreeSelect = Str::contains(request()->url(), 'select');
+        return $this->asNodes($values, $isTreeSelect);
     }
     /**
      * Undocumented function
@@ -261,10 +265,11 @@ class AttrsController extends Controller
         if (is_null($attribute)) {
             return false;
         }
+        $isTreeSelect = Str::contains(request()->url(), 'select');
 
         $attribute['properties'] = AttrProperty::where('attr_id', $attribute->id)->get();
         $attribute['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attribute->id)->get();
-        $attribute['tree'] = $this->asNodes($attribute['values']);
+        $attribute['tree'] = $this->asNodes($attribute['values'], $isTreeSelect);
 
         return response()->json(['code' => 1, 'message' => 'success', 'data' => $attribute]);
     }
@@ -360,7 +365,7 @@ class AttrsController extends Controller
      * @param [type] $values
      * @return void
      */
-    private function asNodes($values = NULL)
+    private function asNodes($values = NULL, $isTreeSelect)
     {
         if (is_null($values)) {
             return false;
@@ -371,6 +376,11 @@ class AttrsController extends Controller
         foreach ($values as $value) {
             if (isset($response[$value['value_id']])) {
                 $response[$value['value_id']]['data'][$value->property_id] = $value->value;
+                if ($isTreeSelect) {
+                    $response[$value['value_id']]['label'] = strlen($value->value) < 7
+                        ? $value->value . ' ' . $response[$value['value_id']]['label']
+                        : $response[$value['value_id']]['label'] . ' ' . $value->value;
+                }
                 continue;
             }
 
@@ -421,6 +431,7 @@ class AttrsController extends Controller
         }
 
         $recursive = [];
+        $isTreeSelect = Str::contains(request()->url(), 'select');
 
         foreach ($values as $key => $value) {
             if ($value['p_value_id'] != $parentID) {
@@ -431,6 +442,11 @@ class AttrsController extends Controller
 
             if (isset($recursive[$valueID])) {
                 $recursive[$valueID]['data'][$value['property_id']] = $value->value;
+                if ($isTreeSelect) {
+                    $recursive[$valueID]['label'] = strlen($value->value) < 7
+                        ?  $value->value  . ' ' .  $recursive[$valueID]['label']
+                        :  $recursive[$valueID]['label']  . ' ' . $value->value;
+                }
                 continue;
             }
 
@@ -671,5 +687,18 @@ class AttrsController extends Controller
             return response()->json([$attrID, 'source has no primary title']);
         }
         return $property->id;
+    }
+
+    public function getTreeselectOptions()
+    {
+        $attributes = Attr::with(['values'])->whereIn('id', config('constants.treeselectIDs'))->get();
+
+        $data  = [];
+
+        foreach ($attributes as $attr) {
+            $data[$attr->id] = $this->asValueTree($attr->values);
+        }
+
+        return response()->json(['code' => 1, 'message' => 'success', 'data' => $data]);
     }
 }

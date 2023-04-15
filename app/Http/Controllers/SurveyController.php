@@ -72,7 +72,7 @@ class SurveyController extends Controller
             case $surveyIDS['PHQ15']:
                 return $this->GAD7AndPHQHandler($data, $surveyID);
             case $surveyIDS['ITQ']:
-                return $this->ITCHandler($data->map(function ($item) {
+                return $this->ITQHandler($data->map(function ($item) {
                     return collect($item);
                 }));
                 // case $surveyIDS['CAPS5']:
@@ -110,7 +110,7 @@ class SurveyController extends Controller
         KPTSA
             If all criterias are met
     */
-    private function ITCHandler($data)
+    private function ITQHandler($data)
     {
         $results = collect([]);
         $keys = ['P' => $data[11], 'C' => $data[13], 'P7_9' => $data[12], 'C7_9' => $data[14]];

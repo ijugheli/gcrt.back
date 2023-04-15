@@ -25,6 +25,12 @@ $router->get('/', function () use ($router) {
 
 
 $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function () use ($router) {
+    $router->group(['prefix' => '/client'], function () use ($router) {
+        $router->post('/save', 'ClientController@save');
+        $router->get('/list', 'ClientController@list');
+        $router->delete('/destroy/{client_id:[0-9]+}', 'ClientController@destroy');
+    });
+
     $router->group(['prefix' => '/attrs'], function () use ($router) {
         $router->get('', 'AttrsController@list');
         $router->post('/add', 'AttrsController@addAttribute');
@@ -32,8 +38,11 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->get('/static', 'AttrsController@attrs');
         $router->get('/{attr_id:[0-9]+}', 'AttrsController@properties');
         $router->get('/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
+        $router->get('/{attr_id:[0-9]+}/values/tree-select/{value_id:[0-9]+}', 'AttrsController@treeNodes');
         $router->get('/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@value');
         $router->get('/{attr_id:[0-9]+}/values', 'AttrsController@table');
+        $router->get('/tree-select/{attr_id:[0-9]+}/values', 'AttrsController@table');
+        $router->get('/tree-select-options', 'AttrsController@getTreeselectOptions');
         $router->get('/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@relatedTable');
         $router->get('/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
         $router->post('/{attr_id:[0-9]+}/title', 'AttrsController@setTitle');
