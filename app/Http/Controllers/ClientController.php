@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ClientResource;
+use App\Http\Services\ClientService;
 use Illuminate\Http\Request;
 use App\Models\Client\Client;
 use App\Models\Client\ClientContact;
@@ -12,18 +13,14 @@ use App\Models\Client\ClientAdditional;
 
 class ClientController extends Controller
 {
-    public function save(Request $request)
+    public function save(Request $request, ClientService $service)
     {
         $data = $request->all();
 
-        $client = Client::updateOrCreate($data['main']);
-        ClientAdditional::updateOrCreate(['client_id' => $client->id, ...$data['additional']]);
-        ClientContact::updateOrCreate(['client_id' => $client->id, ...$data['contact']]);
-        ClientAddress::updateOrCreate(['client_id' => $client->id, ...$data['address']]);
-
-        if ($client->wasRecentlyCreated) {
-            $client->client_code = $client->client_code . '[' . $client->id . ']';
-            $client->save();
+        if (isset($data['main']['id']) && $data['main']['id'] != null) {
+            $service->update($data, $data['main']['id']);
+        } else {
+            $service->create($data);
         }
 
         return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა',]);
