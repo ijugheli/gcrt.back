@@ -6,9 +6,6 @@ use App\Http\Resources\ClientResource;
 use App\Http\Services\ClientService;
 use Illuminate\Http\Request;
 use App\Models\Client\Client;
-use App\Models\Client\ClientContact;
-use App\Models\Client\ClientAddress;
-use App\Models\Client\ClientAdditional;
 
 
 class ClientController extends Controller
@@ -16,6 +13,13 @@ class ClientController extends Controller
     public function save(Request $request, ClientService $service)
     {
         $data = $request->all();
+
+        foreach ($data as $key => $value) {
+            if (isset($value['updated_at']) && isset($value['created_at'])) {
+                unset($data[$key]['updated_at']);
+                unset($data[$key]['created_at']);
+            }
+        }
 
         if (isset($data['main']['id']) && $data['main']['id'] != null) {
             $service->update($data, $data['main']['id']);
