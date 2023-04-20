@@ -22,7 +22,7 @@ class CarePlanService extends BaseCaseService implements BaseCaseInterface
         $this->handleModels($data, $caseID, CaseCarePlan::class);
         if ($caseID != null) {
             $ids = collect($data)->pluck('id')->toArray();
-            CaseCarePlan::where('case_id', $caseID)->whereNotIn('id', $ids)->update(['status_id' => -1]);
+            CaseCarePlan::where('case_id', $caseID)->whereNotIn('id', $ids)->delete();
         }
     }
 
