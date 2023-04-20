@@ -19,7 +19,11 @@ class FormsOfViolenceService extends BaseCaseService implements BaseCaseInterfac
 
     public function store($data, $caseID = null)
     {
-        return $this->handleModels($data, $caseID, CaseFormsOfViolence::class);
+        $this->handleModels($data, $caseID, CaseFormsOfViolence::class);
+        if ($caseID != null) {
+            $ids = collect($data)->pluck('id')->toArray();
+            CaseFormsOfViolence::where('case_id', $caseID)->whereNotIn('id', $ids)->update(['status_id' => -1]);
+        }
     }
 
     public function update($data)
