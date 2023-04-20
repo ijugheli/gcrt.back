@@ -22,7 +22,7 @@ class FormsOfViolenceService extends BaseCaseService implements BaseCaseInterfac
         $this->handleModels($data, $caseID, CaseFormsOfViolence::class);
         if ($caseID != null) {
             $ids = collect($data)->pluck('id')->toArray();
-            CaseFormsOfViolence::where('case_id', $caseID)->whereNotIn('id', $ids)->update(['status_id' => -1]);
+            CaseFormsOfViolence::where('case_id', $caseID)->whereNotIn('id', $ids)->delete();
         }
     }
 
