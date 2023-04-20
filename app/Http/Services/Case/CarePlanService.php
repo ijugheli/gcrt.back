@@ -7,7 +7,7 @@ use App\Models\Case\CaseCarePlan;
 
 class CarePlanService extends BaseCaseService implements BaseCaseInterface
 {
-    public function index($caseID =null)
+    public function index($caseID = null)
     {
         // TODO: Implement index() method.
     }
@@ -19,7 +19,11 @@ class CarePlanService extends BaseCaseService implements BaseCaseInterface
 
     public function store($data, $caseID = null)
     {
-        return $this->handleModels($data, $caseID, CaseCarePlan::class);
+        $this->handleModels($data, $caseID, CaseCarePlan::class);
+        if ($caseID != null) {
+            $ids = collect($data)->pluck('id')->toArray();
+            CaseCarePlan::where('case_id', $caseID)->whereNotIn('id', $ids)->update(['status_id' => -1]);
+        }
     }
 
     public function update($data)

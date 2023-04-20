@@ -49,15 +49,14 @@ class CaseController extends Controller implements CaseControllerInterface
 
     public function store(Request $request)
     {
+
         $data = $request->all();
 
         if (is_null($data) || is_null($data['case'])) {
             return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
 
-        $this->service->store($data);
-
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა',]);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  CaseResource::make($this->service->store($data))]);
     }
 
     public function update(Request $request)

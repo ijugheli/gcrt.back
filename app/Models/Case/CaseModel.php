@@ -35,12 +35,12 @@ class CaseModel extends Model
 
     public function carePlans()
     {
-        return $this->hasMany(CaseCarePlan::class, 'case_id', 'id');
+        return $this->hasMany(CaseCarePlan::class, 'case_id', 'id')->where('status_id', 1);
     }
 
     public function formsOfViolences()
     {
-        return $this->hasMany(CaseFormsOfViolence::class, 'case_id', 'id');
+        return $this->hasMany(CaseFormsOfViolence::class, 'case_id', 'id')->where('status_id', 1);
     }
 
     public function diagnoses()
