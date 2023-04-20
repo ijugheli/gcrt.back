@@ -10,38 +10,53 @@ use App\Models\Client\Client;
 
 class ClientController extends Controller
 {
-    public function save(Request $request, ClientService $service)
+    private $service;
+
+    public function __construct(ClientService $service)
+    {
+        $this->service = $service;
+    }
+
+    public function store(Request $request)
     {
         $data = $request->all();
 
-        foreach ($data as $key => $value) {
-            if (isset($value['updated_at']) && isset($value['created_at'])) {
-                unset($data[$key]['updated_at']);
-                unset($data[$key]['created_at']);
-            }
-        }
-
         if (isset($data['main']['id']) && $data['main']['id'] != null) {
-            $service->update($data, $data['main']['id']);
+            $this->service->update($data, $data['main']['id']);
         } else {
-            $service->create($data);
+            $this->service->create($data);
         }
 
         return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა',]);
     }
 
-    public function list()
+    public function index()
     {
         return response()->json([
-            'code' => 1, 'message' => 'Success', 'data' => ClientResource::collection(Client::where('status_id', 1)->with(['additionalInfo', 'contact', 'address'])->get())
+            'code' => 1, 'message' => 'Success', 'data' => ClientResource::collection($this->service->index())
         ]);
     }
 
-    public function destroy()
+    public function show($id)
     {
-        Client::whereKey(request()->client_id)->update(['status_id' => -1]);
+        $data = $this->service->show($id);
+
+        if (is_null($data)) {
+            return response()->json([
+                'code' => 0, 'message' => 'ჩანაწერი ვერ მოიძებნა',
+            ],400);
+        }
+
         return response()->json([
-            'code' => 1, 'message' => 'Success', 'data' => ClientResource::collection(Client::where('status_id', 1)->with(['additionalInfo', 'contact', 'address'])->get())
+            'code' => 1, 'message' => 'Success', 'data' => ClientResource::make($data)
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $this->service->destroy($id);
+        return response()->json([
+            'code' => 1, 'message' => 'Success', 'data' => ClientResource::collection($this->service->index())
         ]);
     }
 }

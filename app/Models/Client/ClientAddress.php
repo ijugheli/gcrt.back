@@ -16,28 +16,4 @@ class ClientAddress extends Model
         'zip_code',
         'previous_address'
     ];
-    public function dataType()
-    {
-        return $this->hasOne(InputDataType::class, 'id', 'input_data_type');
-    }
-
-    public function viewType()
-    {
-        return $this->hasOne(InputViewType::class, 'id', 'input_view_type');
-    }
-
-    public function source()
-    {
-        return $this->hasOne(Attr::class, 'id', 'source_attr_id');
-    }
-
-    public function isSection()
-    {
-        return $this->type == 2;
-    }
-
-    // public function scopeActive(Builder $query): void
-    // {
-    //     $query->where('status_id', 1);
-    // }
 }

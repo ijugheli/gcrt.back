@@ -24,6 +24,7 @@ class Client extends Model
         'category_group_id',
         'repeating_client',
         'gender',
+        'status_id',
     ];
 
     public function additionalInfo()

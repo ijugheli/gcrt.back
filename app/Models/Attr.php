@@ -44,10 +44,19 @@ class Attr extends Model
         ))[0]->count;
     }
 
-
     public function getIsTreeAttribute()
     {
         return $this->type == config('settings.ATTR_TYPES')['tree'];
+    }
+
+    public static function hasChildren($values)
+    {
+        return  DB::table('attr_values as av')
+            ->whereIn('p_value_id', $values->pluck('value_id')->toArray())
+            ->where('attr_id', $values[0]['attr_id'])
+            ->select('p_value_id', DB::raw('EXISTS(SELECT 1 FROM attr_values WHERE p_value_id = av.p_value_id) as has_child'))
+            ->groupBy('p_value_id')
+            ->pluck('has_child', 'p_value_id');
     }
 
     public function hasOptions()

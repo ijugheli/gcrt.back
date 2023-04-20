@@ -9,8 +9,6 @@ use Illuminate\Support\Str;
 use App\Http\Helpers\Helper;
 use App\Models\AttrProperty;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use App\Models\SurveyDefinitionValue;
 use Illuminate\Support\Facades\Validator;
 
 class AttrsController extends Controller
@@ -251,8 +249,7 @@ class AttrsController extends Controller
         $attrID = request()->attr_id;
         $valueID = request()->value_id;
         $values = AttrValue::where('p_value_id', $valueID)->where('attr_id', $attrID)->get();
-        $isTreeSelect = Str::contains(request()->url(), 'select');
-        return $this->asNodes($values, $isTreeSelect);
+        return $this->asNodes($values);
     }
     /**
      * Undocumented function
@@ -265,11 +262,10 @@ class AttrsController extends Controller
         if (is_null($attribute)) {
             return false;
         }
-        $isTreeSelect = Str::contains(request()->url(), 'select');
 
         $attribute['properties'] = AttrProperty::where('attr_id', $attribute->id)->get();
         $attribute['values'] = AttrValue::where('p_value_id', 0)->where('attr_id', $attribute->id)->get();
-        $attribute['tree'] = $this->asNodes($attribute['values'], $isTreeSelect);
+        $attribute['tree'] = $this->asNodes($attribute['values']);
 
         return response()->json(['code' => 1, 'message' => 'success', 'data' => $attribute]);
     }
@@ -365,11 +361,17 @@ class AttrsController extends Controller
      * @param [type] $values
      * @return void
      */
-    private function asNodes($values = NULL, $isTreeSelect)
+    private function asNodes($values = NULL, $counts = null)
     {
         if (is_null($values)) {
             return false;
         }
+
+        if (is_null($counts)) {
+            $counts = Attr::hasChildren($values);
+        }
+
+        $isTreeSelect = Str::contains(request()->url(), 'select');
 
         $response = [];
 
@@ -384,7 +386,8 @@ class AttrsController extends Controller
                 continue;
             }
 
-            $node = $value->getNode(true);
+            $node = $value->getNode();
+            $node['leaf'] = $counts->get($value['value_id'], 0) <= 0;
             $response[$value['value_id']] = $node;
         }
 
@@ -424,13 +427,22 @@ class AttrsController extends Controller
      * @param integer $parentID
      * @return void
      */
-    private function asValueTree($values = NULL, $parentID = 0)
+    private function asValueTree($values = NULL, $parentID = 0, $counts = null)
     {
         if (is_null($values)) {
             return false;
         }
 
         $recursive = [];
+
+        if (is_null($counts)) {
+            $counts = Attr::hasChildren($values);
+        }
+
+        // $filteredValues = array_filter($values, function ($value) use ($parentID) {
+        //     return $value['p_value_id'] == $parentID;
+        // });
+
         $isTreeSelect = Str::contains(request()->url(), 'select');
 
         foreach ($values as $key => $value) {
@@ -447,16 +459,31 @@ class AttrsController extends Controller
                         ?  $value->value  . ' ' .  $recursive[$valueID]['label']
                         :  $recursive[$valueID]['label']  . ' ' . $value->value;
                 }
+                unset($values[$key]);
                 continue;
             }
 
-            $recursive[$valueID] = $value->getNode(true);
-            $recursive[$valueID]['children'] = $this->asValueTree($values, $valueID);
+            $node = $value->getNode();
+            $node['leaf'] = $counts->get($valueID, 0) <= 0;
+            $recursive[$valueID] = $node;
+            unset($values[$key]);
+            $recursive[$valueID]['children'] = $this->asValueTree($values, $valueID, $counts);
         }
 
         return $recursive;
     }
 
+    // lazytreeselect
+    private function lazyTreeselect($attr = null)
+    {
+        if (is_null($attr)) {
+            return false;
+        }
+
+        $values = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
+
+        return $this->asNodes($values, null);
+    }
 
     /**
      * Appends full soruce attributes.
@@ -692,8 +719,11 @@ class AttrsController extends Controller
     public function getTreeselectOptions()
     {
         $attributes = Attr::with(['values'])->whereIn('id', config('constants.treeselectIDs'))->get();
+        $lazyAttrs  = Attr::whereIn('id', config('constants.lazyTreeselectIDs'))->get();
 
-        $data  = [];
+        foreach ($lazyAttrs as $attr) {
+            $data[$attr->id] = $this->lazyTreeselect($attr);
+        }
 
         foreach ($attributes as $attr) {
             $data[$attr->id] = $this->asValueTree($attr->values);

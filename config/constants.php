@@ -75,7 +75,7 @@ $userActionTypes = [
     2 => 'editAttr',
     3 => 'deleteAttr',
     4 => 'addProperty',
-    5 => 'editProperty',
+    5 => 'editProperty',    
     6 => 'deleteProperty',
     7 => 'addRecord',
     8 => 'editRecord',
@@ -165,7 +165,8 @@ $meetsITQCriterias = function (int $value, int $key) {
 };
 
 // tree select ids for case and cliemnt 43 icd10
-$treeselectsIDs = [45, 30, 44, 42, 27];
+$treeselectIDs = [45, 30, 44, 42, 27];
+$lazyTreeselectIDs = [43];
 
 
 return [
@@ -190,5 +191,6 @@ return [
     'ITQ' => $ITQ,
     'meetsAllITQCriterias' => $meetsAllITQCriterias,
     'meetsITQCriterias' => $meetsITQCriterias,
-    'treeselectIDs' => $treeselectsIDs
+    'treeselectIDs' => $treeselectIDs,
+    'lazyTreeselectIDs' => $lazyTreeselectIDs
 ];

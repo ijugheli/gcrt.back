@@ -2,23 +2,35 @@
 
 namespace App\Http\Services;
 
-use Carbon\Carbon;
-use App\Models\User;
 use App\Models\Client\Client;
-use App\Models\UserValidationCode;
 use App\Models\Client\ClientAddress;
 use App\Models\Client\ClientContact;
-use Illuminate\Support\Facades\Mail;
 use App\Models\Client\ClientAdditional;
 
 class ClientService
 {
+
+    public function index()
+    {
+        return Client::where('status_id', 1)->with(['additionalInfo', 'contact', 'address'])->get();
+    }
+
+    public function show($id)
+    {
+        return Client::where('status_id', 1)->with(['additionalInfo', 'contact', 'address'])->find($id);
+    }
+
+    public function destroy($id)
+    {
+        Client::find($id)->update(['status_id' => -1]);
+    }
+
     public function update($data, int $id): void
     {
-        Client::whereKey($id)->update($data['main']);
-        ClientAdditional::whereKey($id)->update($data['additional']);
-        ClientContact::whereKey($id)->update($data['contact']);
-        ClientAddress::whereKey($id)->update($data['address']);
+        Client::find($id)->update($data['main']);
+        ClientAdditional::find($id)->update($data['additional']);
+        ClientContact::find($id)->update($data['contact']);
+        ClientAddress::find($id)->update($data['address']);
     }
 
     public function create($data): void

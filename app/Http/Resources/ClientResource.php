@@ -8,22 +8,18 @@ class ClientResource extends JsonResource
 {
     public function toArray($request)
     {
+        $keys = ['updated_at', 'created_at', 'additional_info', 'contact', 'address'];
         $main = parent::toArray($request);
-        unset($main['additional_info']);
-        unset($main['contact']);
-        unset($main['address']);
+
+        foreach ($keys as $key => $value) {
+            unset($main[$value]);
+        }
+
         return [
             'main' => $main,
-            'additional' => $this->additionalInfo,
-            'contact' => $this->contact,
-            'address' => $this->address,
-            // 'showCompletedPage' => false,
-            // 'surveyID' => $this->id,
-            // 'sectionIDS' => $sections->pluck('id'),
-            // 'title' => $this->title,
-            // 'description' => $this->description,
-            // 'elements' => SurveySectionResource::collection($this->sections),
-            // "completeText" => "შენახვა",
+            'additional' => BaseRelationshipResource::make($this->additionalInfo),
+            'contact' => BaseRelationshipResource::make($this->contact),
+            'address' =>  BaseRelationshipResource::make($this->address),
         ];
     }
 }

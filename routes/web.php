@@ -22,13 +22,55 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-
-
 $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function () use ($router) {
     $router->group(['prefix' => '/client'], function () use ($router) {
-        $router->post('/save', 'ClientController@save');
-        $router->get('/list', 'ClientController@list');
-        $router->delete('/destroy/{client_id:[0-9]+}', 'ClientController@destroy');
+        $router->get('/index', 'ClientController@index');
+        $router->get('/show/{id:[0-9]+}', 'ClientController@show');
+        $router->post('/store', 'ClientController@store');
+        $router->delete('/destroy/{id:[0-9]+}', 'ClientController@destroy');
+    });
+
+    $router->group(['prefix' => '/case'], function () use ($router) {
+        $router->post('/store', 'Case\CaseController@store');
+        $router->get('/index', 'Case\CaseController@index');
+        $router->get('/show/{id:[0-9]+}', 'Case\CaseController@show');
+        $router->delete('/destroy/{id:[0-9]+}', 'Case\CaseController@destroy');
+
+        $router->group(['prefix' => '/diagnosis'], function () use ($router) {
+            $router->get('/index', 'Case\DiagnosisController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\DiagnosisController@show');
+            $router->post('/store', 'Case\DiagnosisController@store');
+            $router->post('/update', 'Case\DiagnosisController@update');
+            $router->delete('/destroy/{id:[0-9]+}', 'Case\DiagnosisController@destroy');
+        });
+        $router->group(['prefix' => '/referral'], function () use ($router) {
+            $router->get('/index', 'Case\ReferralController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\ReferralController@show');
+            $router->post('/store', 'Case\ReferralController@store');
+            $router->post('/update', 'Case\ReferralController@update');
+            $router->delete('/destroy/{id:[0-9]+}', 'Case\ReferralController@destroy');
+        });
+        $router->group(['prefix' => '/consultation'], function () use ($router) {
+            $router->get('/index', 'Case\ConsultationController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\ConsultationController@show');
+            $router->post('/store', 'Case\ConsultationController@store');
+            $router->post('/update', 'Case\ConsultationController@update');
+            $router->delete('/destroy/{id:[0-9]+}', 'Case\ConsultationController@destroy');
+        });
+        $router->group(['prefix' => '/forms-of-violence'], function () use ($router) {
+            $router->get('/index', 'Case\FormsOfViolenceController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\FormsOfViolenceController@show');
+            $router->post('/store', 'Case\FormsOfViolenceController@store');
+            $router->post('/update', 'Case\FormsOfViolenceController@update');
+            $router->delete('/destroy/{id:[0-9]+}', 'Case\FormsOfViolenceController@destroy');
+        });
+        $router->group(['prefix' => '/care-plan'], function () use ($router) {
+            $router->get('/index', 'Case\CarePlanController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\CarePlanController@show');
+            $router->post('/store', 'Case\CarePlanController@store');
+            $router->post('/update', 'Case\CarePlanController@update');
+            $router->delete('/destroy/{id:[0-9]+}', 'Case\CarePlanController@destroy');
+        });
     });
 
     $router->group(['prefix' => '/attrs'], function () use ($router) {
