@@ -27,7 +27,7 @@ class ClientController extends Controller
             $this->service->create($data);
         }
 
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა',]);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
     }
 
     public function index()
