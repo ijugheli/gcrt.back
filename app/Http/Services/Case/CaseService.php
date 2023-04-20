@@ -38,7 +38,7 @@ class CaseService extends BaseCaseService implements BaseCaseInterface
         return CaseModel::find($id);
     }
 
-    public function store($data, $caseID = null)
+    public function store($data, $caseID = null): void
     {
         $caseID = null;
 
@@ -55,8 +55,6 @@ class CaseService extends BaseCaseService implements BaseCaseInterface
         $this->referral->store($data['referrals'], $caseID);
         $this->formsOfViolence->store($data['forms_of_violences'], $caseID);
         $this->carePlan->store($data['care_plans'], $caseID);
-
-        return $this->show($caseID);
     }
 
     public function destroy($id): void
