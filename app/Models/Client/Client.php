@@ -44,11 +44,11 @@ class Client extends Model
 
     public function setRegistrationDateAttribute($value)
     {
-        $this->attributes['registration_date'] = (new DateTime($value))->format('Y-m-d h:m:s');;
+        $this->attributes['registration_date'] = is_null($value) ? null : (new DateTime($value))->format('Y-m-d h:m:s');
     }
 
     public function setBirthDateAttribute($value)
     {
-        $this->attributes['birth_date'] = (new DateTime($value))->format('Y-m-d h:m:s');;
+        $this->attributes['birth_date'] = is_null($value) ? null : (new DateTime($value))->format('Y-m-d h:m:s');
     }
 }

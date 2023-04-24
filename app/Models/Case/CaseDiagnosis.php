@@ -25,6 +25,6 @@ class CaseDiagnosis extends Model
 
     public function setDiagnosisDateAttribute($value)
     {
-        $this->attributes['diagnosis_date'] = (new DateTime($value))->format('Y-m-d h:m:s');;
+        $this->attributes['diagnosis_date'] = is_null($value) ? null : (new DateTime($value))->format('Y-m-d h:m:s');
     }
 }

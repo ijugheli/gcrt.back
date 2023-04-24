@@ -23,6 +23,6 @@ class CaseConsultation extends Model
 
     public function setDateAttribute($value)
     {
-        $this->attributes['date'] = (new DateTime($value))->format('Y-m-d h:m:s');;
+        $this->attributes['date'] = is_null($value) ? null : (new DateTime($value))->format('Y-m-d h:m:s');
     }
 }
