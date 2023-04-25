@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Case;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Client\Client;
 use App\Models\Case\CaseModel;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CaseResource;
@@ -61,5 +63,16 @@ class CaseController extends Controller implements CaseControllerInterface
 
     public function update(Request $request)
     {
+    }
+
+    // for dropdown options
+    public function getClients()
+    {
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  Client::select(['id', 'name', 'surname', 'client_code'])->get()]);
+    }
+
+    public function getCaseManagers()
+    {
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  User::select(['id', 'name', 'lastname'])->get()]);
     }
 }

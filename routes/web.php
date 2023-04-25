@@ -35,6 +35,8 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->get('/index', 'Case\CaseController@index');
         $router->get('/show/{id:[0-9]+}', 'Case\CaseController@show');
         $router->delete('/destroy/{id:[0-9]+}', 'Case\CaseController@destroy');
+        $router->get('/clients', 'Case\CaseController@getClients');
+        $router->get('/case-managers', 'Case\CaseController@getCaseManagers');
 
         $router->group(['prefix' => '/diagnosis'], function () use ($router) {
             $router->get('/index', 'Case\DiagnosisController@index');
