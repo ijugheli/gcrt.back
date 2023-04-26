@@ -68,11 +68,11 @@ class CaseController extends Controller implements CaseControllerInterface
     // for dropdown options
     public function getClients()
     {
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  Client::select(['id', 'name', 'surname', 'client_code'])->get()]);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  Client::select(['id', 'name', 'surname', 'client_code'])->where('status_id', 1)->get()]);
     }
 
     public function getCaseManagers()
     {
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  User::select(['id', 'name', 'lastname'])->get()]);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' =>  User::select(['id', 'name', 'lastname'])->where('status_id', 1)->get()]);
     }
 }
