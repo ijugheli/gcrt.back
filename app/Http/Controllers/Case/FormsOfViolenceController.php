@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Case;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Case\CaseFormsOfViolence;
+use App\Http\Resources\BaseRelationshipResource;
 use App\Http\Services\Case\FormsOfViolenceService;
 use App\Http\Controllers\Case\CaseControllerInterface;
-use App\Models\Case\CaseFormsOfViolence;
 
 class FormsOfViolenceController extends Controller implements CaseControllerInterface
 {
@@ -36,16 +37,15 @@ class FormsOfViolenceController extends Controller implements CaseControllerInte
     public function update(Request $request)
     {
         $data = $request->all();
+        $caseID = $request->case_id;
 
         if (is_null($data)) {
-            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'],400);
+            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
 
-        if (!$this->service->update($data)) {
-            return response()->json(['code' => 0, 'message' => 'ჩანაწერი ვერ მოიძებნა'],400);
-        }
+        $this->service->store($data, $caseID);
 
-        return response()->json(['code' => 1, 'message' => 'Success', 'data' => CaseFormsOfViolence::where('case_id', $data['case_id'])->get()]);
+        return response()->json(['code' => 1, 'message' => 'Success', 'data' => BaseRelationshipResource::collection($this->service->index($caseID))]);
     }
 
     public function destroy($id)

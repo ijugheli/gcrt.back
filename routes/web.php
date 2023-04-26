@@ -63,14 +63,14 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
             $router->get('/index', 'Case\FormsOfViolenceController@index');
             $router->get('/show/{id:[0-9]+}', 'Case\FormsOfViolenceController@show');
             $router->post('/store', 'Case\FormsOfViolenceController@store');
-            $router->post('/update', 'Case\FormsOfViolenceController@update');
+            $router->post('/update/{case_id:[0-9]+}', 'Case\FormsOfViolenceController@update');
             $router->delete('/destroy/{id:[0-9]+}', 'Case\FormsOfViolenceController@destroy');
         });
         $router->group(['prefix' => '/care-plan'], function () use ($router) {
             $router->get('/index', 'Case\CarePlanController@index');
             $router->get('/show/{id:[0-9]+}', 'Case\CarePlanController@show');
             $router->post('/store', 'Case\CarePlanController@store');
-            $router->post('/update', 'Case\CarePlanController@update');
+            $router->post('/update/{case_id:[0-9]+}', 'Case\CarePlanController@update');
             $router->delete('/destroy/{id:[0-9]+}', 'Case\CarePlanController@destroy');
         });
     });

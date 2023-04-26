@@ -2,14 +2,14 @@
 
 namespace App\Http\Services\Case;
 
-use App\Http\Services\Case\BaseCaseInterface;
 use App\Models\Case\CaseCarePlan;
+use App\Http\Services\Case\BaseCaseInterface;
 
 class CarePlanService extends BaseCaseService implements BaseCaseInterface
 {
     public function index($caseID = null)
     {
-        // TODO: Implement index() method.
+        return CaseCarePlan::where('case_id', $caseID)->where('status_id', 1)->get();
     }
 
     public function show($id)
@@ -21,8 +21,15 @@ class CarePlanService extends BaseCaseService implements BaseCaseInterface
     {
         $this->handleModels($data, $caseID, CaseCarePlan::class);
         if ($caseID != null) {
+            $builder = CaseCarePlan::where('case_id', $caseID);
+
+            if (count($data) <= 0) {
+                $builder->delete();
+                return;
+            }
+
             $ids = collect($data)->pluck('id')->toArray();
-            CaseCarePlan::where('case_id', $caseID)->whereNotIn('id', $ids)->delete();
+            $builder->whereNotIn('id', $ids)->delete();
         }
     }
 
