@@ -3,6 +3,7 @@
 namespace App\Models\Case;
 
 use DateTime;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class CaseReferral extends Model
@@ -20,8 +21,14 @@ class CaseReferral extends Model
         'result',
     ];
 
+
+    public function getServiceDateAttribute($value)
+    {
+        return  is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+    }
+
     public function setServiceDateAttribute($value)
     {
-        $this->attributes['service_date'] = is_null($value) ? null : (new DateTime($value))->format('Y-m-d h:m:s');
+        $this->attributes['service_date'] = is_null($value) ? null : Carbon::parse($value);;
     }
 }

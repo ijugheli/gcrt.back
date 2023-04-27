@@ -3,6 +3,7 @@
 namespace App\Models\Case;
 
 use DateTime;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class CaseModel extends Model
@@ -58,8 +59,13 @@ class CaseModel extends Model
         return $this->hasMany(CaseReferral::class, 'case_id', 'id')->where('status_id', 1);
     }
 
+    public function getRegistrationDateAttribute($value)
+    {
+        return  is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+    }
+
     public function setRegistrationDateAttribute($value)
     {
-        $this->attributes['registration_date'] = (new DateTime($value))->format('Y-m-d h:m:s');;
+        $this->attributes['registration_date'] = Carbon::parse($value);
     }
 }

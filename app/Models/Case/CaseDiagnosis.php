@@ -3,6 +3,7 @@
 namespace App\Models\Case;
 
 use DateTime;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class CaseDiagnosis extends Model
@@ -22,9 +23,13 @@ class CaseDiagnosis extends Model
         'comment',
     ];
 
+    public function getDiagnosisDateAttribute($value)
+    {
+        return  is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+    }
 
     public function setDiagnosisDateAttribute($value)
     {
-        $this->attributes['diagnosis_date'] = is_null($value) ? null : (new DateTime($value))->format('Y-m-d h:m:s');
+        $this->attributes['diagnosis_date'] = is_null($value) ? null : Carbon::parse($value);;
     }
 }
