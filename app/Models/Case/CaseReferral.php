@@ -29,6 +29,6 @@ class CaseReferral extends Model
 
     public function setServiceDateAttribute($value)
     {
-        $this->attributes['service_date'] = is_null($value) ? null : Carbon::parse($value);;
+        $this->attributes['service_date'] = is_null($value) ? null : Carbon::createFromFormat('d/m/y', $value)->format('d/m/y');
     }
 }

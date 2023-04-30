@@ -30,6 +30,6 @@ class CaseDiagnosis extends Model
 
     public function setDiagnosisDateAttribute($value)
     {
-        $this->attributes['diagnosis_date'] = is_null($value) ? null : Carbon::parse($value);;
+        $this->attributes['diagnosis_date'] = is_null($value) ? null :Carbon::createFromFormat('d/m/y', $value)->format('d/m/y');
     }
 }

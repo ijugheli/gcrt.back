@@ -111,7 +111,7 @@ class SurveyController extends Controller
             If all criterias are met
     */
     private function ITQHandler($data)
-    {
+         {
         $results = collect([]);
         $keys = ['P' => $data[11], 'C' => $data[13], 'P7_9' => $data[12], 'C7_9' => $data[14]];
 
