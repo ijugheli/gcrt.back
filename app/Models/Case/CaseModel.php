@@ -4,6 +4,7 @@ namespace App\Models\Case;
 
 use DateTime;
 use Carbon\Carbon;
+use App\Http\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 
 class CaseModel extends Model
@@ -66,6 +67,6 @@ class CaseModel extends Model
 
     public function setRegistrationDateAttribute($value)
     {
-        $this->attributes['registration_date'] = Carbon::parse($value);
+        $this->attributes['registration_date'] = is_null($value) ? null : Helper::formatDate($value);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Client;
 
+use App\Http\Helpers\Helper;
 use DateTime;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -55,11 +56,12 @@ class Client extends Model
 
     public function setRegistrationDateAttribute($value)
     {
-        $this->attributes['registration_date'] = is_null($value) ? null : Carbon::parse($value);;
+
+        $this->attributes['registration_date'] = is_null($value) ? null : Helper::formatDate($value);
     }
 
     public function setBirthDateAttribute($value)
     {
-        $this->attributes['birth_date'] = is_null($value) ? null : Carbon::parse($value);;
+        $this->attributes['birth_date'] = is_null($value) ? null : Helper::formatDate($value);
     }
 }

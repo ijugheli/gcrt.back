@@ -4,6 +4,7 @@ namespace App\Models\Case;
 
 use DateTime;
 use Carbon\Carbon;
+use App\Http\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 
 class CaseDiagnosis extends Model
@@ -30,6 +31,6 @@ class CaseDiagnosis extends Model
 
     public function setDiagnosisDateAttribute($value)
     {
-        $this->attributes['diagnosis_date'] = is_null($value) ? null :Carbon::createFromFormat('d/m/y', $value)->format('d/m/y');
+        $this->attributes['diagnosis_date'] = is_null($value) ? null : Helper::formatDate($value);
     }
 }

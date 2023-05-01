@@ -2,6 +2,7 @@
 
 namespace App\Http\Helpers;
 
+use Carbon\Carbon;
 use App\Models\UserAction;
 
 class Helper
@@ -32,5 +33,12 @@ class Helper
             'property_id' => $propertyID,
             'record_id' => $recordID,
         ]);
+    }
+
+    static public function formatDate($value)
+    {
+        $date = Carbon::createFromFormat('d/m/y', $value, 'UTC');
+        $datetime = $date->toDateTimeString();
+        return is_null($value) ? null : $datetime;
     }
 }
