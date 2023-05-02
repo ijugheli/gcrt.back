@@ -46,12 +46,12 @@ class Client extends Model
 
     public function getRegistrationDateAttribute($value)
     {
-        return is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+        return is_null($value) ? null : Carbon::parse($value)->format('d/m/Y');
     }
 
     public function getBirthDateAttribute($value)
     {
-        return is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+        return is_null($value) ? null : Carbon::parse($value)->format('d/m/Y');
     }
 
     public function setRegistrationDateAttribute($value)

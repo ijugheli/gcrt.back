@@ -24,7 +24,7 @@ class CaseConsultation extends Model
 
     public function getDateAttribute($value)
     {
-        return is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+        return is_null($value) ? null : Carbon::parse($value)->format('d/m/Y');
     }
 
     public function setDateAttribute($value)

@@ -37,7 +37,7 @@ class Helper
 
     static public function formatDate($value)
     {
-        $date = Carbon::createFromFormat('d/m/y', $value, 'UTC');
+        $date = Carbon::createFromFormat('d/m/Y', $value, 'UTC');
         $datetime = $date->toDateTimeString();
         return is_null($value) ? null : $datetime;
     }

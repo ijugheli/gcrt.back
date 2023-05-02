@@ -26,7 +26,7 @@ class CaseDiagnosis extends Model
 
     public function getDiagnosisDateAttribute($value)
     {
-        return  is_null($value) ? null : Carbon::parse($value)->format('d/m/y');
+        return  is_null($value) ? null : Carbon::parse($value)->format('d/m/Y');
     }
 
     public function setDiagnosisDateAttribute($value)
