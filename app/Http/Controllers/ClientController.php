@@ -20,14 +20,16 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
+        $clientID = null;
 
         if (isset($data['main']['id']) && $data['main']['id'] != null) {
+            $clientID = $data['main']['id'];
             $this->service->update($data, $data['main']['id']);
         } else {
-            $this->service->create($data);
+            $clientID = $this->service->create($data);
         }
 
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' => ClientResource::make($this->service->show($clientID))]);
     }
 
     public function index()
@@ -44,7 +46,7 @@ class ClientController extends Controller
         if (is_null($data)) {
             return response()->json([
                 'code' => 0, 'message' => 'ჩანაწერი ვერ მოიძებნა',
-            ],400);
+            ], 400);
         }
 
         return response()->json([

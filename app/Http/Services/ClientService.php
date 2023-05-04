@@ -33,7 +33,7 @@ class ClientService
         ClientAddress::find($id)->update($data['address']);
     }
 
-    public function create($data): void
+    public function create($data)
     {
         $client = Client::create($data['main']);
         ClientAdditional::create(['client_id' => $client->id, ...$data['additional']]);
@@ -42,5 +42,7 @@ class ClientService
 
         $client->client_code = $client->client_code . '[' . $client->id . ']';
         $client->save();
+
+        return $client->id;
     }
 }
