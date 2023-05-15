@@ -12,7 +12,7 @@ class Attr extends Model
     protected $appends = ['count', 'isTree'];
     protected $casts = [
         'lazy' => 'boolean',
-        'status_id' => 'boolean'
+        // 'status_id' => 'boolean'
     ];
 
     public $timestamps = false;

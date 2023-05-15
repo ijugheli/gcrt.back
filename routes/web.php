@@ -76,6 +76,7 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
     });
 
     $router->group(['prefix' => '/attrs'], function () use ($router) {
+        $router->post('test/test', 'AttrsController@test');
         $router->get('', 'AttrsController@list');
         $router->post('/add', 'AttrsController@addAttribute');
         $router->delete('/{attr_id:[0-9]+}', 'AttrsController@removeAttribute');

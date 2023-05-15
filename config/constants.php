@@ -75,7 +75,7 @@ $userActionTypes = [
     2 => 'editAttr',
     3 => 'deleteAttr',
     4 => 'addProperty',
-    5 => 'editProperty',    
+    5 => 'editProperty',
     6 => 'deleteProperty',
     7 => 'addRecord',
     8 => 'editRecord',
@@ -167,7 +167,29 @@ $meetsITQCriterias = function (int $value, int $key) {
 // tree select ids for case and cliemnt 43 icd10
 $treeselectIDs = [45, 30, 44, 42, 27];
 $lazyTreeselectIDs = [43];
-
+// Disabled attrs for case and client attr dropdowns mostly
+$disabledAttrs = [
+    27, 45, 43, 44, 42, 30, 48, 50, 51, 52, 58, 13,
+    15,
+    16,
+    17,
+    18,
+    20,
+    21,
+    22,
+    24,
+    25,
+    29,
+    32,
+    47,
+    57,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+];
 
 return [
     'userActionTypes' => $userActionTypes,
@@ -192,5 +214,6 @@ return [
     'meetsAllITQCriterias' => $meetsAllITQCriterias,
     'meetsITQCriterias' => $meetsITQCriterias,
     'treeselectIDs' => $treeselectIDs,
-    'lazyTreeselectIDs' => $lazyTreeselectIDs
+    'lazyTreeselectIDs' => $lazyTreeselectIDs,
+    'disabledAttrs' => $disabledAttrs
 ];

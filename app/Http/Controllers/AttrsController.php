@@ -16,7 +16,9 @@ class AttrsController extends Controller
 
     public function attrs()
     {
-        $attrs = Attr::with(['properties'])->get();
+        $attrs = Attr::where('status_id', '!=', -1)->with(['properties' => function ($query) {
+            $query->where('status_id', '!=', -1);
+        }])->get();
 
         foreach ($attrs as $key => $attr) {
             if (!$attr->hasOptions())
@@ -24,7 +26,7 @@ class AttrsController extends Controller
 
             $attrs[$key]['options'] = AttrValue::where(function ($query) {
                 $query->where('p_value_id', null)
-                    ->orWhere('p_value_id', 0);
+                    ->orWhere('p_value_id', 0)->where('status_id', '!=', -1);
             })->where('attr_id', $attr->id)->get();
         }
 
@@ -34,7 +36,8 @@ class AttrsController extends Controller
     public function records()
     {
         $attrID = request()->attr_id;
-        $values = AttrValue::where('attr_id', $attrID)->get();
+        $activeProperties = AttrProperty::select(['attr_id', 'status_id', 'id'])->where('attr_id', $attrID)->where('status_id', 1)->get()->pluck('id');
+        $values = AttrValue::where('attr_id', $attrID)->whereIn('property_id', $activeProperties)->get();
         $records = [];
 
         foreach ($values as $value) {
@@ -118,13 +121,14 @@ class AttrsController extends Controller
         }
 
         Attr::find($attrID)->values()->createMany($sanitizedValues);
+        $activeProperties = AttrProperty::select(['attr_id', 'status_id', 'id'])->where('attr_id', $attrID)->where('status_id', 1)->get()->pluck('id');
 
         Helper::saveUserAction(config('constants.userActionTypesIDS.addRecord'), null, null, $valueID);
 
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
+            'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->whereIn('property_id', $activeProperties)->get()
         ]);
     }
 
@@ -165,10 +169,12 @@ class AttrsController extends Controller
             $value->save();
         }
 
+        $activeProperties = AttrProperty::select(['attr_id', 'status_id', 'id'])->where('attr_id', $attrID)->where('status_id', 1)->get()->pluck('id');
+
         return response()->json([
             'code' => 1,
             'message' => 'ოპერაცია წარმატებით დასრულდა',
-            'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get(),
+            'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->whereIn('property_id', $activeProperties)->get()
         ]);
     }
 
@@ -199,7 +205,7 @@ class AttrsController extends Controller
     public function removeAttribute(Request $request)
     {
         $attrID = $request->route('attr_id');
-        $attr = Attr::find('id', $attrID);
+        $attr = Attr::find($attrID);
 
         if (!$attr) {
             return response()->json([
@@ -212,9 +218,10 @@ class AttrsController extends Controller
 
         AttrValue::where('attr_id', $attrID)->update(['status_id' => -1]);
         AttrProperty::where('attr_id', $attrID)->update(['status_id' => -1]);
-        $attr->update(['status_id' => -1]);
+        $attr->status_id = -1;
+        $attr->save();
 
-        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა']);
+        return response()->json(['code' => 1, 'message' => 'ოპერაცია წარმატებით დასრულდა', 'data' => $attr]);
     }
 
 
@@ -716,7 +723,7 @@ class AttrsController extends Controller
         return $property->id;
     }
 
-    public function getTreeselectOptions()
+    public function getTreeselectoptions()
     {
         $attributes = Attr::with(['values'])->whereIn('id', config('constants.treeselectIDs'))->get();
         $lazyAttrs  = Attr::whereIn('id', config('constants.lazyTreeselectIDs'))->get();
@@ -730,5 +737,44 @@ class AttrsController extends Controller
         }
 
         return response()->json(['code' => 1, 'message' => 'success', 'data' => $data]);
+    }
+
+    public function test(Request $request)
+    {
+        $values = $request->all();
+        $attrID = 71;
+        $valueID = AttrValue::where('attr_id', $attrID)->max('value_id');
+        $valueID = is_null($valueID) ? 1 : $valueID + 1;
+        $sanitizedValues = [];
+        foreach ($values as $k => $entry) {
+            $propertyValue = [];
+            $propertyValue['value_string'] = $entry;
+            $propertyValue['property_id'] = 213;
+
+            if (is_null($propertyValue)) {
+                continue;
+            }
+
+            $propertyValue['value_id'] = $valueID + $k;
+            $propertyValue['attr_id'] = $attrID;
+            // Assign userID
+            $propertyValue['created_by'] = $propertyValue['owner_id'] = auth()->user()->id;
+
+            unset($propertyValue['id']);
+            unset($propertyValue['insert_date']);
+            unset($propertyValue['update_date']);
+            array_push($sanitizedValues, $propertyValue);
+        }
+
+        Attr::find($attrID)->values()->createMany($sanitizedValues);
+
+        // dd($sanitizedValues);
+        // Helper::saveUserAction(config('constants.userActionTypesIDS.addRecord'), null, null, $valueID);
+
+        return response()->json([
+            'code' => 1,
+            'message' => 'ოპერაცია წარმატებით დასრულდა',
+            // 'data' => AttrValue::where('attr_id', $attrID)->where('value_id', $valueID)->get()
+        ]);
     }
 }

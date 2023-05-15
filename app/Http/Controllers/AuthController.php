@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\UserAction;
 use App\Http\Helpers\Helper;
@@ -140,6 +141,9 @@ class AuthController extends Controller
      */
     protected function respondWithToken($token)
     {
+        $future = Carbon::now()->addMinutes(auth()->factory()->getTTL());
+        $milliseconds = $future->timestamp * 1000 + $future->micro / 1000;
+
         return response()->json([
             'code' => 1,
             'message' => 'ავტორიზაცია წარმატებით დასრულდა',
@@ -147,7 +151,7 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'bearer',
                 'user' => auth()->user(),
-                'expires_in' => auth()->factory()->getTTL() * 60
+                'expires_at' =>  round($milliseconds)
             ],
         ]);
     }
