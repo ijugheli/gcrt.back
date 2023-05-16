@@ -81,6 +81,7 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->post('/add', 'AttrsController@addAttribute');
         $router->delete('/{attr_id:[0-9]+}', 'AttrsController@removeAttribute');
         $router->get('/static', 'AttrsController@attrs');
+        $router->get('/static/{attr_id:[0-9]+}', 'AttrsController@getAttrStatic');
         $router->get('/{attr_id:[0-9]+}', 'AttrsController@properties');
         $router->get('/{attr_id:[0-9]+}/values/tree/{value_id:[0-9]+}', 'AttrsController@treeNodes');
         $router->get('/{attr_id:[0-9]+}/values/tree-select/{value_id:[0-9]+}', 'AttrsController@treeNodes');

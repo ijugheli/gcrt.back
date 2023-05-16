@@ -38,7 +38,7 @@ class Attr extends Model
             'SELECT COUNT(0) as count
                              FROM (SELECT 0
                                      FROM `attr_values`
-                                    WHERE attr_id = ? GROUP BY value_id
+                                    WHERE attr_id = ? and status_id = 1 GROUP BY value_id
                                    ) a',
             [$this->id]
         ))[0]->count;
