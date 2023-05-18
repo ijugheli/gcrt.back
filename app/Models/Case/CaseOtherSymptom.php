@@ -13,18 +13,18 @@ class CaseOtherSymptom extends Model
         'id',
         'case_id',
         'status_id',
-        'registration_date',
+        'record_date',
         'somatic_symptom_comment',
         'mental_symptom_comment',
     ];
 
-    public function getRegistrationDateAttribute($value)
+    public function getRecordDateAttribute($value)
     {
         return  is_null($value) ? null : Carbon::parse($value)->format('d/m/Y');
     }
 
-    public function setRegistrationDateAttribute($value)
+    public function setRecordDateAttribute($value)
     {
-        $this->attributes['registration_date'] = is_null($value) ? null : Helper::formatDate($value);
+        $this->attributes['record_date'] = is_null($value) ? null : Helper::formatDate($value);
     }
 }
