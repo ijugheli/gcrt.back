@@ -504,7 +504,7 @@ class AttrsController extends Controller
             return false;
         }
 
-        $values = AttrValue::where('p_value_id', 0)->where('attr_id', $attr->id)->get();
+        $values = AttrValue::where('p_value_id', 0)->where('status_id', 1)->where('attr_id', $attr->id)->get();
 
         return $this->asNodes($values, null);
     }
@@ -745,7 +745,9 @@ class AttrsController extends Controller
 
     public function getTreeselectoptions()
     {
-        $attributes = Attr::with(['values'])->whereIn('id', config('constants.treeselectIDs'))->get();
+        $attributes = Attr::with(['values' => function ($query) {
+            $query->where('status_id', 1);
+        }])->whereIn('id', config('constants.treeselectIDs'))->get();
         $lazyAttrs  = Attr::whereIn('id', config('constants.lazyTreeselectIDs'))->get();
 
         foreach ($lazyAttrs as $attr) {
