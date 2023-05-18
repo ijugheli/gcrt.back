@@ -24,6 +24,7 @@ class CaseModel extends Model
         'incident_text',
         'social_status',
         'legal_status',
+        'health_condition',
         'status_id',
     ];
 
