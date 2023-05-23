@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CaseOtherSymptom extends Model
 {
-    protected $table = "other_symptom_records";
+    protected $table = "case_other_symptom_records";
     protected $fillable = [
         'id',
         'case_id',

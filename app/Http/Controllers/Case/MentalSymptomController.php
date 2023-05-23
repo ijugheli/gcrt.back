@@ -36,25 +36,25 @@ class MentalSymptomController extends Controller implements CaseControllerInterf
     public function update(Request $request)
     {
         $data = $request->all();
+        $caseID = intval($request->case_id);
 
         if (is_null($data)) {
-            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'],400);
+            return response()->json(['code' => 0, 'message' => 'დაფიქსირდა შეცდომა'], 400);
         }
 
-        if (!$this->service->update($data)) {
-            return response()->json(['code' => 0, 'message' => 'ჩანაწერი ვერ მოიძებნა'],400);
-        }
+        $this->service->store($data, $caseID);
 
-        return response()->json(['code' => 1, 'message' => 'Success', 'data' => BaseRelationshipResource::collection($this->service->index($data['case_id']))]);
+        return response()->json(['code' => 1, 'message' => 'Success', 'data' => BaseRelationshipResource::collection($this->service->index($caseID))]);
     }
 
-    public function destroy($id)
+    public function destroy($case_id)
     {
-        $model = CaseMentalSymptom::find($id);
-        $model->update(['status_id' => -1]);
-        // return ::where('case_id', $model->case_id)->where('status_id', 1)->get();
+        $caseID = request()->case_id;
+        $data = request()->all();
+        $ids = $data['data'];
+        $this->service->destroy($ids);
         return response()->json([
-            'code' => 1, 'message' => 'Success', 'data' => BaseRelationshipResource::collection($this->service->index($model->case_id))
+            'code' => 1, 'message' => 'Success', 'data' => BaseRelationshipResource::collection($this->service->index($caseID))
         ]);
     }
 }

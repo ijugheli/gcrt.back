@@ -73,6 +73,27 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
             $router->post('/update/{case_id:[0-9]+}', 'Case\CarePlanController@update');
             $router->delete('/destroy/{id:[0-9]+}', 'Case\CarePlanController@destroy');
         });
+        $router->group(['prefix' => '/mental-symptom'], function () use ($router) {
+            $router->get('/index', 'Case\MentalSymptomController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\MentalSymptomController@show');
+            $router->post('/store', 'Case\MentalSymptomController@store');
+            $router->post('/update/{case_id:[0-9]+}', 'Case\MentalSymptomController@update');
+            $router->post('/destroy/{case_id:[0-9]+}', 'Case\MentalSymptomController@destroy');
+        });
+        $router->group(['prefix' => '/somatic-symptom'], function () use ($router) {
+            $router->get('/index', 'Case\SomaticSymptomController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\SomaticSymptomController@show');
+            $router->post('/store', 'Case\SomaticSymptomController@store');
+            $router->post('/update/{case_id:[0-9]+}', 'Case\SomaticSymptomController@update');
+            $router->post('/destroy/{case_id:[0-9]+}', 'Case\SomaticSymptomController@destroy');
+        });
+        $router->group(['prefix' => '/other-symptom'], function () use ($router) {
+            $router->get('/index', 'Case\OtherSymptomController@index');
+            $router->get('/show/{id:[0-9]+}', 'Case\OtherSymptomController@show');
+            $router->post('/store', 'Case\OtherSymptomController@store');
+            $router->post('/update/{case_id:[0-9]+}', 'Case\OtherSymptomController@update');
+            $router->delete('/destroy/{id:[0-9]+}', 'Case\OtherSymptomController@destroy');
+        });
     });
 
     $router->group(['prefix' => '/attrs'], function () use ($router) {

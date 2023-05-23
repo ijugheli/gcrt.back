@@ -2,8 +2,9 @@
 
 namespace App\Http\Services\Case;
 
-use App\Http\Services\Case\BaseCaseInterface;
+use Carbon\Carbon;
 use App\Models\Case\CaseSomaticSymptom;
+use App\Http\Services\Case\BaseCaseInterface;
 
 class SomaticSymptomService extends BaseCaseService implements BaseCaseInterface
 {
@@ -19,7 +20,18 @@ class SomaticSymptomService extends BaseCaseService implements BaseCaseInterface
 
     public function store($data, $caseID = null)
     {
-        return $this->handleModels($data, $caseID, CaseSomaticSymptom::class);
+        $this->handleModels($data, $caseID, CaseSomaticSymptom::class);
+        if ($caseID != null) {
+            $builder = CaseSomaticSymptom::where('case_id', $caseID)->whereDate('record_date', Carbon::createFromFormat('d/m/Y', $data[0]['record_date'])->format('Y-m-d'));
+
+            if (count($data) <= 0) {
+                $builder->delete();
+                return;
+            }
+
+            $ids = collect($data)->pluck('id')->toArray();
+            $builder->whereNotIn('id', $ids)->delete();
+        }
     }
 
     public function update($data)
@@ -27,8 +39,8 @@ class SomaticSymptomService extends BaseCaseService implements BaseCaseInterface
         return $this->handleModel($data, CaseSomaticSymptom::class);
     }
 
-    public function destroy($id)
+    public function destroy($ids)
     {
-        CaseSomaticSymptom::find($id)->update(['status_id' => -1]);
+        CaseSomaticSymptom::whereIn('id', $ids)->update(['status_id' => -1]);
     }
 }

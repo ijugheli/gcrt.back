@@ -33,7 +33,10 @@ class CaseModel extends Model
         'consultations',
         'diagnoses',
         'carePlans',
-        'formsOfViolences'
+        'formsOfViolences',
+        'mentalSymptoms',
+        'somaticSymptoms',
+        'otherSymptoms'
     ];
 
     public function carePlans()
@@ -60,6 +63,21 @@ class CaseModel extends Model
     {
         return $this->hasMany(CaseReferral::class, 'case_id', 'id')->where('status_id', 1);
     }
+    public function mentalSymptoms()
+    {
+        return $this->hasMany(CaseMentalSymptom::class, 'case_id', 'id')->where('status_id', 1);
+    }
+
+    public function somaticSymptoms()
+    {
+        return $this->hasMany(CaseSomaticSymptom::class, 'case_id', 'id')->where('status_id', 1);
+    }
+
+    public function otherSymptoms()
+    {
+        return $this->hasMany(CaseOtherSymptom::class, 'case_id', 'id')->where('status_id', 1);
+    }
+
 
     public function getRegistrationDateAttribute($value)
     {

@@ -9,7 +9,7 @@ class CaseResource extends JsonResource
     public function toArray($request)
     {
         $keys = [
-            'updated_at', 'created_at', 'forms_of_violences', 'care_plans', 'diagnoses',  'referrals', 'consultations'
+            'updated_at', 'created_at', 'forms_of_violences', 'care_plans', 'diagnoses',  'referrals', 'consultations', 'mental_symptoms', 'somatic_symptoms', 'other_symptoms'
         ];
 
         $case = parent::toArray($request);
@@ -25,6 +25,9 @@ class CaseResource extends JsonResource
             'diagnoses' =>  BaseRelationshipResource::make($this->diagnoses),
             'referrals' =>  BaseRelationshipResource::make($this->referrals),
             'consultations' =>   BaseRelationshipResource::make($this->consultations),
+            'mental_symptoms' =>   BaseRelationshipResource::make($this->mentalSymptoms),
+            'somatic_symptoms' =>   BaseRelationshipResource::make($this->somaticSymptoms),
+            'other_symptoms' =>   BaseRelationshipResource::make($this->otherSymptoms),
         ];
     }
 }
