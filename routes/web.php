@@ -108,7 +108,6 @@ $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function ()
         $router->get('/{attr_id:[0-9]+}/values/tree-select/{value_id:[0-9]+}', 'AttrsController@treeNodes');
         $router->get('/{attr_id:[0-9]+}/values/{value_id:[0-9]+}', 'AttrsController@value');
         $router->get('/{attr_id:[0-9]+}/values', 'AttrsController@table');
-        $router->get('/tree-select/{attr_id:[0-9]+}/values', 'AttrsController@table');
         $router->get('/tree-select-options', 'AttrsController@getTreeselectOptions');
         $router->get('/{attr_id:[0-9]+}/related/{value_id:[0-9]+}', 'AttrsController@relatedTable');
         $router->get('/{attr_id:[0-9]+}/values/list', 'AttrsController@values');
