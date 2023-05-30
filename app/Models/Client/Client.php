@@ -23,9 +23,13 @@ class Client extends Model
         'birth_date',
         'age',
         'age_group',
-        'category_group_id',
+        'client_group',
+        'client_subgroup',
         'repeating_client',
         'gender',
+        'gender_field',
+        'sex',
+        'client_type',
         'status_id',
     ];
 

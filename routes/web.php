@@ -22,6 +22,12 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+$router->get('test2', 'AttrsController@test');
+$router->get('test1', function () use ($router) {
+    return $router->app->version();
+});
+
+
 $router->group(['middleware' => 'auth', 'prefix' => $backendPrefix], function () use ($router) {
     $router->group(['prefix' => '/client'], function () use ($router) {
         $router->get('/index', 'ClientController@index');

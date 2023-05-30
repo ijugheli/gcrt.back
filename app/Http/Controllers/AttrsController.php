@@ -787,6 +787,54 @@ class AttrsController extends Controller
 
     public function test(Request $request)
     {
+        $values = AttrValue::where('attr_id', 43)->get();
+        $recursive = [];
+        $map = [];
+
+        foreach ($values as $value) {
+            $value = [
+                'value_id' => $value['value_id'],
+                'p_value_id' => $value['p_value_id']
+            ];
+
+            if(!isset($map[$value['value_id']])) {
+                $map[$value['value_id']] = [
+                    'children' => [],
+                    'values' => [],
+                    'valueID' => $value['value_id'],
+                    'parentID' => $value['p_value_id']
+                ];
+            }
+
+            array_push($map[$value['value_id']]['values'], $value);
+        }
+
+        foreach($map as $key => $value) {
+            $valueID = $value['valueID'];
+            $parentValueID = $value['parentID'];
+            if(is_null($parentValueID)  ||$parentValueID == 0||  !isset($map[$parentValueID])) {
+                continue;
+            }
+
+            // array_push($m[$parentValueID]['children'], $value);
+            $tmp = $map[$valueID];
+            // unset($map[$valueID]);
+            array_push($map[$parentValueID]['children'], $tmp);
+        }
+
+        foreach($map as $key => $value) {
+            $valueID = $value['valueID'];
+            $parentValueID = $value['parentID'];
+            if(is_null($parentValueID)  ||$parentValueID == 0||  !isset($map[$parentValueID])) {
+                continue;
+            }
+
+            $tmp = $map[$valueID];
+            unset($map[$valueID]);
+            array_push($map[$parentValueID]['children'], $tmp);
+        }
+
+        return $map;
         // $values = $request->all();
         // $attrID = 71;
         // $valueID = AttrValue::where('attr_id', $attrID)->max('value_id');

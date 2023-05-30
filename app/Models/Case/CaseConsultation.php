@@ -20,6 +20,7 @@ class CaseConsultation extends Model
         'duration',
         'consultant_record',
         'consultant_prescription',
+        'client_status',
     ];
 
     public function getDateAttribute($value)
